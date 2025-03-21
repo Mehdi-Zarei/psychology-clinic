@@ -13,9 +13,13 @@ const {
   gtMe,
 } = require("./auth.controller");
 
+//* Validator
+const { bodyValidator } = require("../../../middlewares/validator");
+const { sentOtpSchema } = require("./auth.validator");
+
 //* Routes
 
-router.route("/sent").post(sentOtp);
+router.route("/sent").post(bodyValidator(sentOtpSchema), sentOtp);
 
 router.route("/verify").post(verify);
 
