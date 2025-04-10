@@ -1,24 +1,24 @@
 const { redisClient: redis } = require("../configs/redis");
 
-const saveOtp = async (phone, otpCode) => {
+const saveData = async (key, value, ttl) => {
   try {
-    return await redis.set(`otp:${phone}`, otpCode, "EX", 60);
+    return await redis.set(key, value, "EX", ttl);
   } catch (error) {
     throw new error();
   }
 };
 
-const getOtp = async (phone) => {
+const getData = async (key) => {
   try {
-    const otp = await redis.get(`otp:${phone}`);
+    const data = await redis.get(key);
 
-    if (!otp) {
+    if (!data) {
       return {
         remainingTime: 0,
         expired: true,
       };
     }
-    return otp;
+    return data;
   } catch (error) {
     throw error;
   }
@@ -52,12 +52,17 @@ const getOtpInfo = async (phone) => {
   }
 };
 
-const removeOtp = async (phone) => {
+const removeData = async (key) => {
   try {
-    return await redis.del(`otp:${phone}`);
+    return await redis.del(key);
   } catch (error) {
     throw error;
   }
 };
 
-module.exports = { saveOtp, getOtp, getOtpInfo, removeOtp };
+module.exports = {
+  saveData,
+  getData,
+  getOtpInfo,
+  removeData,
+};
