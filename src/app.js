@@ -8,6 +8,7 @@ const cors = require("cors");
 const { corsOptions } = require("./middlewares/corsOptions");
 const { errorHandler } = require("./middlewares/errorHandler");
 const authRoutes = require("./modules/auth/v1/auth.routes");
+const scheduleRoutes = require("./modules/schedule/v1/schedule.routes");
 
 //* Built-in Middlewares
 
@@ -20,6 +21,7 @@ app.use(cors(corsOptions));
 //* Import Routes
 
 app.use("/api/v1/auth", authRoutes);
+app.use("/api/v1/schedule", scheduleRoutes);
 
 //* 404 Error Handler
 
