@@ -16,6 +16,9 @@ module.exports = {
     jwtAccessTokenExpire: process.env.ACCESS_TOKEN_EXPIRES_IN_MINUTES,
 
     jwtRefreshTokenExpire: process.env.REFRESH_TOKEN_EXPIRES_IN_DAYS,
+
+    refreshTokenExpireTimeInRedis:
+      process.env.REFRESH_TOKEN_EXPIRE_TIME_IN_REDIS,
   },
 
   zarinpal: {
