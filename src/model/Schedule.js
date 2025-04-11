@@ -24,6 +24,12 @@ const scheduleSchema = new mongoose.Schema(
       required: true,
     },
     availableTimes: [bookingTimes],
+
+    expiresAt: {
+      type: Date,
+      required: true,
+      index: { expires: 0 },
+    },
   },
   { timestamps: true }
 );
