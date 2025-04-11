@@ -32,10 +32,10 @@ router.route("/register").post(bodyValidator(registerSchema), register);
 
 router.route("/login").post(bodyValidator(loginSchema), login);
 
-router.route("/logout").post(authGuard, logout);
+router.route("/logout").post(authGuard(), logout);
 
-router.route("/refresh").get(authGuard, refreshAccessToken);
+router.route("/refresh").get(authGuard(), refreshAccessToken);
 
-router.route("/me").get(authGuard, getMe);
+router.route("/me").get(authGuard(), getMe);
 
 module.exports = router;
