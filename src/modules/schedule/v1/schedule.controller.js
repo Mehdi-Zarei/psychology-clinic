@@ -1,3 +1,4 @@
+const { isValidObjectId } = require("mongoose");
 const {
   successResponse,
   errorResponse,
@@ -9,7 +10,6 @@ exports.setAvailableTime = async (req, res, next) => {
   try {
     const { date, availableTimes } = req.body;
     const user = req.user;
-
     const newTimes = availableTimes.map((available) => available.time);
 
     const existingTime = await scheduleModel.findOne({
@@ -31,11 +31,15 @@ exports.setAvailableTime = async (req, res, next) => {
       { $push: { availableTimes } }
     );
 
+    const setExpireDate = new Date(date);
+    setExpireDate.setHours(23, 59, 59, 999);
+
     if (!existingDate) {
       await scheduleModel.create({
         psychologist: user._id,
         date: new Date(date),
         availableTimes,
+        expiresAt: setExpireDate,
       });
     }
 
@@ -75,6 +79,10 @@ exports.editAppointmentDate = async (req, res, next) => {
     const { date } = req.body;
     const user = req.user;
 
+    if (!isValidObjectId(id)) {
+      return errorResponse(res, 409, "آیدی ارسال شده صحیح نمی باشد!");
+    }
+
     const update = await scheduleModel.findOneAndUpdate(
       { _id: id, psychologist: user._id },
       { date: new Date(date) }
@@ -99,6 +107,10 @@ exports.editAppointmentTime = async (req, res, next) => {
     const { id } = req.params;
     const { newTime } = req.body;
     const user = req.user;
+
+    if (!isValidObjectId(id)) {
+      return errorResponse(res, 409, "آیدی ارسال شده صحیح نمی باشد!");
+    }
 
     const update = await scheduleModel.findOneAndUpdate(
       {
@@ -127,6 +139,10 @@ exports.removeAppointmentDate = async (req, res, next) => {
   try {
     const { id } = req.params;
     const user = req.user;
+
+    if (!isValidObjectId(id)) {
+      return errorResponse(res, 409, "آیدی ارسال شده صحیح نمی باشد!");
+    }
 
     const remove = await scheduleModel.findOneAndDelete({
       _id: id,
