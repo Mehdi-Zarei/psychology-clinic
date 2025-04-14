@@ -14,7 +14,7 @@ const bookingTimes = new mongoose.Schema({
 
 const scheduleSchema = new mongoose.Schema(
   {
-    psychologist: {
+    psychologistID: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "user",
       required: true,
