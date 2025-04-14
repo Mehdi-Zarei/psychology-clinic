@@ -25,6 +25,7 @@ const {
 const sentSms = require("../../../service/otp");
 
 const userModel = require("../../../model/User");
+const psychologistModel = require("../../../model/Psychologist");
 
 exports.sentOtp = async (req, res, next) => {
   try {
@@ -256,7 +257,47 @@ exports.getMe = async (req, res, next) => {
   try {
     const user = req.user;
 
+    const isPsychologist = await psychologistModel.findOne({
+      psychologistID: user._id,
+    });
+
+    if (isPsychologist) {
+      return successResponse(res, 200, { user, isPsychologist });
+    }
+
     return successResponse(res, 200, user);
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.updateProfile = async (req, res, next) => {
+  try {
+    const { name, email, aboutMe } = req.body;
+    const user = req.user;
+
+    const mainUser = await userModel.findOne({ _id: user._id });
+
+    mainUser.name = name || mainUser.name;
+    mainUser.email = email || mainUser.email;
+
+    const isPsychologist = await psychologistModel.findOne({
+      psychologistID: user._id,
+    });
+
+    let avatar = "";
+
+    if (req.file) {
+      avatar = `public/images/profile/${req.file.filename}`;
+    }
+
+    isPsychologist.aboutMe = aboutMe || isPsychologist.aboutMe;
+    isPsychologist.avatar = avatar || isPsychologist.avatar;
+
+    await mainUser.save();
+    await isPsychologist.save();
+
+    return successResponse(res, 200, "پروفایل شما با موفقیت بروزرسانی گردید.");
   } catch (error) {
     next(error);
   }
