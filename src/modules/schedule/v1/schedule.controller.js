@@ -1,10 +1,13 @@
 const { isValidObjectId } = require("mongoose");
+
 const {
   successResponse,
   errorResponse,
 } = require("../../../helper/responseMessage");
 
+//* Models
 const scheduleModel = require("../../../model/Schedule");
+const userModel = require("../../../model/User");
 
 exports.setAvailableTime = async (req, res, next) => {
   try {
@@ -12,8 +15,23 @@ exports.setAvailableTime = async (req, res, next) => {
     const user = req.user;
     const newTimes = availableTimes.map((available) => available.time);
 
+    const isUserRestrict = await userModel.findOne({
+      id: user._id,
+      isRestrict: true,
+    });
+
+    console.log(isUserRestrict);
+
+    if (isUserRestrict) {
+      return errorResponse(
+        res,
+        403,
+        "متاسفانه شما قادر به ثبت زمان مشاوره نخواهید بود."
+      );
+    }
+
     const existingTime = await scheduleModel.findOne({
-      psychologist: user._id,
+      psychologistID: user._id,
       date: new Date(date),
       "availableTimes.time": { $in: newTimes },
     });
@@ -27,7 +45,7 @@ exports.setAvailableTime = async (req, res, next) => {
     }
 
     const existingDate = await scheduleModel.findOneAndUpdate(
-      { psychologist: user._id, date: new Date(date) },
+      { psychologistID: user._id, date: new Date(date) },
       { $push: { availableTimes } }
     );
 
@@ -36,7 +54,7 @@ exports.setAvailableTime = async (req, res, next) => {
 
     if (!existingDate) {
       await scheduleModel.create({
-        psychologist: user._id,
+        psychologistID: user._id,
         date: new Date(date),
         availableTimes,
         expiresAt: setExpireDate,
@@ -57,9 +75,11 @@ exports.getAvailableTime = async (req, res, next) => {
   try {
     const user = req.user;
 
+    const filter = user.role === "ADMIN" ? {} : { psychologistID: user._id };
+
     const appointments = await scheduleModel
-      .find({ psychologist: user._id })
-      .populate("psychologist", "name")
+      .find(filter)
+      .populate("psychologistID", "name")
       .select("-__v")
       .lean();
 
@@ -84,7 +104,7 @@ exports.editAppointmentDate = async (req, res, next) => {
     }
 
     const update = await scheduleModel.findOneAndUpdate(
-      { _id: id, psychologist: user._id },
+      { _id: id, psychologistID: user._id },
       { date: new Date(date) }
     );
 
@@ -114,7 +134,7 @@ exports.editAppointmentTime = async (req, res, next) => {
 
     const update = await scheduleModel.findOneAndUpdate(
       {
-        psychologist: user._id,
+        psychologistID: user._id,
         "availableTimes._id": id,
       },
       {
@@ -146,7 +166,7 @@ exports.removeAppointmentDate = async (req, res, next) => {
 
     const remove = await scheduleModel.findOneAndDelete({
       _id: id,
-      psychologist: user._id,
+      psychologistID: user._id,
     });
 
     if (!remove) {
