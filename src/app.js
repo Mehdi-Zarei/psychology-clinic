@@ -9,6 +9,8 @@ const { corsOptions } = require("./middlewares/corsOptions");
 const { errorHandler } = require("./middlewares/errorHandler");
 const authRoutes = require("./modules/auth/v1/auth.routes");
 const scheduleRoutes = require("./modules/schedule/v1/schedule.routes");
+const bookingRoutes = require("./modules/booking/v1/booking.routes");
+const psychologistRoutes = require("./modules/psychologist/v1/psychologist.routes");
 
 //* Built-in Middlewares
 
@@ -22,6 +24,8 @@ app.use(cors(corsOptions));
 
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/schedule", scheduleRoutes);
+app.use("/api/v1/book", bookingRoutes);
+app.use("/api/v1/psychologist", psychologistRoutes);
 
 //* 404 Error Handler
 
