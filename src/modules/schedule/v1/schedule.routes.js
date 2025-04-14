@@ -26,24 +26,24 @@ const {
 router
   .route("/")
   .post(
-    authGuard("PSYCHOLOGIST"),
+    authGuard(["PSYCHOLOGIST", "ADMIN"]),
     bodyValidator(setAvailableTimeSchema),
     setAvailableTime
   )
-  .get(authGuard("PSYCHOLOGIST"), getAvailableTime);
+  .get(authGuard(["ADMIN", "PSYCHOLOGIST"]), getAvailableTime);
 
 router
   .route("/:id")
   .put(
-    authGuard("PSYCHOLOGIST"),
+    authGuard(["PSYCHOLOGIST"]),
     bodyValidator(editAppointmentDateSchema),
     editAppointmentDate
   )
   .patch(
-    authGuard("PSYCHOLOGIST"),
+    authGuard(["PSYCHOLOGIST"]),
     bodyValidator(editAppointmentTimeSchema),
     editAppointmentTime
   )
-  .delete(authGuard("PSYCHOLOGIST"), removeAppointmentDate);
+  .delete(authGuard(["PSYCHOLOGIST"]), removeAppointmentDate);
 
 module.exports = router;
