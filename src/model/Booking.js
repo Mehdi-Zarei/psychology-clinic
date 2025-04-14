@@ -7,7 +7,7 @@ const bookingSchema = new mongoose.Schema(
       ref: "user",
       required: true,
     },
-    psychologist: {
+    psychologistID: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "user",
       required: true,
