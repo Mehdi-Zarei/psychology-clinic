@@ -10,6 +10,7 @@ const {
   logout,
   refreshAccessToken,
   getMe,
+  updateProfile,
 } = require("./auth.controller");
 
 //* Validator
@@ -21,6 +22,11 @@ const {
   loginSchema,
 } = require("./auth.validator");
 const authGuard = require("../../../middlewares/authGuard");
+
+//* Uploader
+const { multerStorage } = require("../../../utils/multer");
+
+const upload = multerStorage("public/images/profile", 5, [".jpg", ".jpeg"]);
 
 //* Routes
 
@@ -36,6 +42,9 @@ router.route("/logout").post(authGuard(), logout);
 
 router.route("/refresh").get(authGuard(), refreshAccessToken);
 
-router.route("/me").get(authGuard(), getMe);
+router
+  .route("/me")
+  .get(authGuard(), getMe)
+  .patch(authGuard(), upload.single("avatar"), updateProfile); //todo body validator for update profile
 
 module.exports = router;
