@@ -1,10 +1,15 @@
+const fs = require("fs");
+
 const bodyValidator = (schema) => {
   return async (req, res, next) => {
     try {
       await schema.validateAsync(req.body, { abortEarly: false });
       next();
-    } catch (err) {
-      return res.status(400).json({ errors: err.message });
+    } catch (error) {
+      if (req.file) {
+        fs.unlinkSync(`${req.file.destination}/${req.file.filename}`);
+      }
+      next(error);
     }
   };
 };
