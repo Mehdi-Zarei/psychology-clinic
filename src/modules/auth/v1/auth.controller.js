@@ -257,12 +257,12 @@ exports.getMe = async (req, res, next) => {
   try {
     const user = req.user;
 
-    const isPsychologist = await psychologistModel.findOne({
+    const isPsychologistExist = await psychologistModel.findOne({
       psychologistID: user._id,
     });
 
-    if (isPsychologist) {
-      return successResponse(res, 200, { user, isPsychologist });
+    if (isPsychologistExist) {
+      return successResponse(res, 200, { user, isPsychologistExist });
     }
 
     return successResponse(res, 200, user);
@@ -281,21 +281,23 @@ exports.updateProfile = async (req, res, next) => {
     mainUser.name = name || mainUser.name;
     mainUser.email = email || mainUser.email;
 
-    const isPsychologist = await psychologistModel.findOne({
+    const isPsychologistExist = await psychologistModel.findOne({
       psychologistID: user._id,
     });
 
-    let avatar = "";
+    if (isPsychologistExist) {
+      isPsychologistExist.aboutMe = aboutMe || isPsychologistExist.aboutMe;
 
-    if (req.file) {
-      avatar = `public/images/profile/${req.file.filename}`;
+      if (req.file) {
+        isPsychologistExist.avatar = `public/images/profile/${req.file.filename}`;
+      }
+
+      //todo : remove old profile and update
+
+      await isPsychologistExist.save();
     }
 
-    isPsychologist.aboutMe = aboutMe || isPsychologist.aboutMe;
-    isPsychologist.avatar = avatar || isPsychologist.avatar;
-
     await mainUser.save();
-    await isPsychologist.save();
 
     return successResponse(res, 200, "پروفایل شما با موفقیت بروزرسانی گردید.");
   } catch (error) {
