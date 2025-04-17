@@ -10,6 +10,7 @@ const psychologistSchema = new mongoose.Schema(
     },
     avatar: {
       type: String,
+      required: true,
       default: "",
     },
     education: {
@@ -44,6 +45,7 @@ const psychologistSchema = new mongoose.Schema(
         },
         comment: String,
         stars: Number,
+        isAccept: { type: Boolean, default: false },
       },
     ],
   },
