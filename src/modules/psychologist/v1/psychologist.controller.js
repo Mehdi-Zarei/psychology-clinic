@@ -1,6 +1,7 @@
-const { isValidObjectId } = require("mongoose");
+const { isValidObjectId, default: mongoose } = require("mongoose");
 const psychologistModel = require("../../../model/Psychologist");
 const scheduleModel = require("../../../model/Schedule");
+
 const {
   errorResponse,
   successResponse,
@@ -33,13 +34,6 @@ exports.register = async (req, res, next) => {
       );
     }
 
-    console.log(req.file);
-
-    let avatar = "";
-
-    if (req.file) {
-      avatar = `public/images/profile/${req.file.filename}`;
-    }
     const register = await psychologistModel.create({
       psychologistID,
       education,
@@ -47,7 +41,7 @@ exports.register = async (req, res, next) => {
       aboutMe,
       specialization,
       experienceYears,
-      avatar,
+      avatar: `public/images/profile/${req.file.filename}`,
     });
 
     return successResponse(res, 201, "ثبت نام با موفقیت انجام شد", register);
@@ -62,7 +56,7 @@ exports.getAll = async (req, res, next) => {
       .find({})
       .populate("psychologistID", "name")
       .lean()
-      .select("-__v");
+      .select("avatar education specialization rating");
 
     if (!psychologists.length) {
       return errorResponse(res, 404, "متاسفانه روانشناسی یافت نشد.");
@@ -85,8 +79,8 @@ exports.getOne = async (req, res, next) => {
     const psychologist = await psychologistModel
       .findOne({ psychologistID: id })
       .populate("psychologistID", "name")
-      .lean()
-      .select("-__v");
+      .select("-reviews")
+      .lean();
 
     if (!psychologist) {
       return errorResponse(res, 404, "متاسفانه روانشناسی یافت نشد.");
@@ -94,14 +88,28 @@ exports.getOne = async (req, res, next) => {
 
     const today = new Date();
 
-    const availableTime = await scheduleModel
-      .find({
-        psychologistID: id,
-        date: { $gte: today },
-      })
-      .select("availableTimes date");
+    const schedules = await scheduleModel.aggregate([
+      {
+        $match: {
+          psychologistID: new mongoose.Types.ObjectId(id),
+          date: { $gte: today },
+        },
+      },
+      {
+        $project: {
+          date: 1,
+          availableTimes: {
+            $filter: {
+              input: "$availableTimes",
+              as: "slot",
+              cond: { $eq: ["$$slot.isBooked", false] },
+            },
+          },
+        },
+      },
+    ]);
 
-    if (!availableTime.length) {
+    if (!schedules.length) {
       return successResponse(
         res,
         200,
@@ -110,7 +118,7 @@ exports.getOne = async (req, res, next) => {
       );
     }
 
-    return successResponse(res, 200, psychologist, availableTime);
+    return successResponse(res, 200, psychologist, schedules);
   } catch (error) {
     next(error);
   }
@@ -137,6 +145,149 @@ exports.remove = async (req, res, next) => {
     }
 
     return successResponse(res, 200, "روانشناس با موفقیت حذف شد.");
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.getReviews = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    if (!isValidObjectId(id)) {
+      return errorResponse(res, 409, "آیدی وارد شده معتبر نمی باشد.");
+    }
+
+    const psychologist = await psychologistModel
+      .findOne({
+        psychologistID: id,
+      })
+      .populate("reviews.user", "name")
+      .select("reviews");
+
+    if (!psychologist) {
+      return errorResponse(res, 404, "متاسفانه روانشناسی یافت نشد.");
+    }
+
+    if (!psychologist.reviews.length) {
+      return errorResponse(
+        res,
+        404,
+        "برای این روانشناس هنوز نظری ثبت نشده!شما اولین نفری باشید که نظر میدهید."
+      );
+    }
+
+    psychologist.reviews = psychologist.reviews.filter(
+      (review) => review.isAccept === true
+    );
+
+    return successResponse(res, 200, psychologist);
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.createReview = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { comment, stars } = req.body;
+    const user = req.user;
+
+    if (!isValidObjectId(id)) {
+      return errorResponse(res, 409, "آیدی وارد شده معتبر نمی باشد.");
+    }
+
+    const psychologist = await psychologistModel.findOne({
+      psychologistID: id,
+    });
+
+    if (!psychologist) {
+      return errorResponse(res, 404, "متاسفانه روانشناس مورد نظر پیدا نشد!");
+    }
+
+    psychologist.reviews.push({
+      user: user._id,
+      comment,
+      stars,
+      isAccept: false,
+    });
+
+    // const totalStars = psychologist.reviews.reduce(
+    //   (sum, review) => sum + review.stars,
+    //   0
+    // );
+
+    // const averageRating = totalStars / psychologist.reviews.length;
+
+    // psychologist.rating = averageRating;
+    await psychologist.save();
+
+    return successResponse(
+      res,
+      201,
+      "نظر شما با موفقیت ثبت شد و پس از تائید مدیر قابل نمایش می باشد."
+    );
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.acceptReview = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    if (!isValidObjectId(id)) {
+      return errorResponse(res, 409, "آیدی وارد شده معتبر نمی باشد.");
+    }
+
+    const acceptReview = await psychologistModel.findOneAndUpdate(
+      {
+        "reviews._id": id,
+      },
+      { $set: { "reviews.$.isAccept": true } }
+    );
+
+    if (!acceptReview) {
+      return errorResponse(res, 404, "کامنت یافت نشد!");
+    }
+
+    const totalStars = acceptReview.reviews.reduce(
+      (sum, review) => sum + review.stars,
+      0
+    );
+
+    const averageRating = totalStars / acceptReview.reviews.length.toFixed(1);
+
+    acceptReview.rating = averageRating;
+
+    await acceptReview.save();
+
+    return successResponse(res, 200, "کامنت مورد نظر با موفقیت تائید شد.");
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.removeReview = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    if (!isValidObjectId(id)) {
+      return errorResponse(res, 409, "آیدی وارد شده معتبر نمی باشد.");
+    }
+
+    const review = await psychologistModel.updateOne(
+      {
+        "reviews._id": id,
+      },
+      { $pull: { reviews: { _id: id } } }
+    );
+
+    if (!review.modifiedCount) {
+      return errorResponse(res, 404, "کامنت پیدا نشد.");
+    }
+
+    return successResponse(res, 200, "کامنت مورد نظر با موفقیت پاک شد.");
   } catch (error) {
     next(error);
   }
