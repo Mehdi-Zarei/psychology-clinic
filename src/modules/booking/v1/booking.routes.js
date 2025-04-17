@@ -6,6 +6,6 @@ const authGuard = require("../../../middlewares/authGuard");
 //* Controllers
 const { booking } = require("./booking.controller");
 
-router.route("/").post(authGuard, booking);
+router.route("/:id").post(authGuard(), booking);
 
 module.exports = router;
