@@ -95,9 +95,25 @@ const loginSchema = Joi.object({
   }),
 });
 
+const updateProfileSchema = Joi.object({
+  name: Joi.string().min(3).max(100).messages({
+    "string.base": "نام باید به صورت رشته باشد.",
+    "string.min": "نام باید حداقل ۳ کاراکتر باشد.",
+    "string.max": "نام نباید بیشتر از ۱۰۰ کاراکتر باشد.",
+  }),
+
+  email: Joi.string().email().messages({
+    "string.base": "ایمیل باید به صورت رشته باشد.",
+    "string.email": "ایمیل وارد شده معتبر نیست.",
+  }),
+
+  aboutMe: Joi.string().max(1500),
+});
+
 module.exports = {
   sentOtpSchema,
   verifyOtpSchema,
   registerSchema,
   loginSchema,
+  updateProfileSchema,
 };
