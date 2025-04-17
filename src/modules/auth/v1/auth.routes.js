@@ -20,6 +20,7 @@ const {
   verifyOtpSchema,
   registerSchema,
   loginSchema,
+  updateProfileSchema,
 } = require("./auth.validator");
 const authGuard = require("../../../middlewares/authGuard");
 
@@ -45,6 +46,11 @@ router.route("/refresh").get(authGuard(), refreshAccessToken);
 router
   .route("/me")
   .get(authGuard(), getMe)
-  .patch(authGuard(), upload.single("avatar"), updateProfile); //todo body validator for update profile
+  .patch(
+    authGuard(),
+    upload.single("avatar"),
+    bodyValidator(updateProfileSchema),
+    updateProfile
+  );
 
 module.exports = router;
