@@ -20,8 +20,6 @@ exports.setAvailableTime = async (req, res, next) => {
       isRestrict: true,
     });
 
-    console.log(isUserRestrict);
-
     if (isUserRestrict) {
       return errorResponse(
         res,
