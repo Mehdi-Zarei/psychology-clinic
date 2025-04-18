@@ -91,7 +91,7 @@ exports.getOne = async (req, res, next) => {
     const schedules = await scheduleModel.aggregate([
       {
         $match: {
-          psychologistID: new mongoose.Types.ObjectId(id),
+          psychologistID: mongoose.Types.ObjectId.createFromHexString(id),
           date: { $gte: today },
         },
       },
