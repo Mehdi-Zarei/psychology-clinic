@@ -23,24 +23,6 @@ exports.errorHandler = (err, req, res, next) => {
     );
   }
 
-  // Yup validation error
-  if (err.name === "ValidationError" && err.errors) {
-    const errors = err.errors.map((msg) => ({
-      message: msg,
-    }));
-
-    return errorResponse(res, 400, "خطا در اعتبارسنجی اطلاعات", errors);
-  }
-
-  // Zod validation error
-  if (err.name === "ZodError" && err.issues) {
-    const errors = err.issues.map((issue) => ({
-      field: issue.path.join("."),
-      message: issue.message,
-    }));
-    return errorResponse(res, 400, "خطا در اعتبارسنجی اطلاعات", errors);
-  }
-
   const errorMessage =
     typeof err.message === "string" ? err.message : defaultMessage;
 
