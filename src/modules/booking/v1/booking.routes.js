@@ -4,8 +4,8 @@ const router = express.Router();
 const authGuard = require("../../../middlewares/authGuard");
 
 //* Controllers
-const { booking } = require("./booking.controller");
+const { bookingAppointment } = require("./booking.controller");
 
-router.route("/:id").post(authGuard(), booking);
+router.route("/:id").post(authGuard(), bookingAppointment);
 
 module.exports = router;
