@@ -32,7 +32,15 @@ module.exports = {
   },
 
   otp: {
-    pattern: process.env.OTP_PATTERN,
+    otpPattern: process.env.OTP_PATTERN,
+    otpVariable: process.env.OTP_VARIABLE,
+
+    feedbackPattern: process.env.FEEDBACK_LINK_PATTERN,
+    feedbackVariable: process.env.FEEDBACK_LINK_VARIABLE,
+
+    psychologistReminderPattern: process.env.PSYCHOLOGIST_REMINDER_PATTERN,
+    psychologistReminderVariable: process.env.PSYCHOLOGIST_REMINDER_VARIABLE,
+
     user: process.env.OTP_USER,
     pass: process.env.OTP_PASS,
   },
