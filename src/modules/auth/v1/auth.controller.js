@@ -26,6 +26,7 @@ const sentSms = require("../../../service/otp");
 
 const userModel = require("../../../model/User");
 const psychologistModel = require("../../../model/Psychologist");
+const envConfigs = require("../../../envConfigs");
 
 exports.sentOtp = async (req, res, next) => {
   try {
@@ -52,7 +53,13 @@ exports.sentOtp = async (req, res, next) => {
 
     await saveData(`otp:${phone}`, generateOtpCode, 60);
 
-    const smsResult = await sentSms(phone, generateOtpCode);
+    const smsResult = await sentSms(
+      phone,
+      envConfigs.otp.otpPattern,
+      envConfigs.otp.otpVariable,
+      generateOtpCode
+    );
+
     if (smsResult.success) {
       return successResponse(
         res,
@@ -292,7 +299,7 @@ exports.updateProfile = async (req, res, next) => {
         isPsychologistExist.avatar = `public/images/profile/${req.file.filename}`;
       }
 
-      //todo : remove old profile and update
+      //TODO : remove old profile and update
 
       await isPsychologistExist.save();
     }
