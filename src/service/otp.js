@@ -1,7 +1,7 @@
 const axios = require("axios");
 const envConfigs = require("../envConfigs");
 
-const sentSms = async (userPhone, otpCode) => {
+const sentSms = async (userPhone, smsPattern, smsVariable, data) => {
   try {
     const response = await axios.post("http://ippanel.com/api/select", {
       op: "pattern",
@@ -9,18 +9,18 @@ const sentSms = async (userPhone, otpCode) => {
       pass: envConfigs.otp.pass,
       fromNum: "3000505",
       toNum: userPhone,
-      patternCode: envConfigs.otp.pattern,
-      inputData: [{ "verification-code": otpCode }],
+      patternCode: smsPattern,
+      inputData: [{ [smsVariable]: data }],
     });
 
     if (Array.isArray(response.data) || response.data.length > 1) {
-      console.log("OTP Error Body -->", response.data);
+      console.log("SMS Error Body -->", response.data);
       return { success: false };
     }
 
     return { success: true };
   } catch (error) {
-    console.error("OTP Error -->", error);
+    console.error("SMS Error -->", error);
     return { success: false };
   }
 };
