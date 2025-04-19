@@ -135,39 +135,42 @@ exports.bookingAppointment = async (req, res, next) => {
 exports.cancelBooking = async (req, res, next) => {
   try {
     const { id } = req.params;
+    const user = req.user;
 
     if (!isValidObjectId(id)) {
       return errorResponse(res, 409, "آیدی وارد شده صحیح نمی باشد.");
     }
 
-    const cancel = await bookingModel.findOne(
+    const cancel = await bookingModel.findOneAndUpdate(
       {
+        user: user._id,
         time: { $elemMatch: { _id: id, status: "reserved" } },
-      }
-      // { $set: { "time.$.status": "canceled" } }
+      },
+      { $set: { "time.$.status": "canceled" } }
     );
 
-    // if (!cancel) {
-    //   return errorResponse(res, 409, "این زمان ملاقات قبلا لغو شده است.");
-    // }
+    if (!cancel) {
+      return errorResponse(res, 409, "این زمان ملاقات قبلا لغو شده است.");
+    }
 
-    console.log("cancel", cancel);
+    const selectedTime = cancel.time.find((item) => item._id.toString() === id);
 
-    const selectedTime = cancel.time.find((item) => {
-      item._id.toString() === id.toString();
+    await scheduleModel.findOneAndUpdate(
+      { "availableTimes._id": selectedTime.availableTimeId },
+      { $set: { "availableTimes.$.isBooked": false } }
+    );
+
+    const psychologist = await userModel.findOne({
+      _id: cancel.psychologistID,
     });
 
-    console.log("selectedTime", selectedTime);
+    await sentSms(
+      psychologist.phone,
+      envConfigs.otp.psychologistReminderPattern,
+      envConfigs.otp.psychologistReminderVariable
+    );
 
-    const newSchedule = await scheduleModel.findOneAndUpdate({
-      date: cancel.date,
-      psychologistID: cancel.psychologistID,
-      availableTimes: cancel.startTime,
-    });
-
-    // console.log(newSchedule);
-
-    // return successResponse(res, 200, "زمان ملاقات شما با موفقیت لغو گردید.");
+    return successResponse(res, 200, "زمان ملاقات شما با موفقیت لغو گردید.");
   } catch (error) {
     next(error);
   }
