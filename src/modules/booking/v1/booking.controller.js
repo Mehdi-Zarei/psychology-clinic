@@ -13,12 +13,34 @@ const userModel = require("../../../model/User");
 const sentSms = require("../../../service/otp");
 const envConfigs = require("../../../envConfigs");
 
+exports.getAll = async (req, res, next) => {
+  try {
+    const user = req.user;
+
+    const filter = user.role === "ADMIN" ? {} : { user: user._id };
+
+    const reservations = await bookingModel
+      .find(filter)
+      .populate("psychologistID", "name")
+      .select("-__v")
+      .lean();
+
+    if (!reservations.length) {
+      return errorResponse(res, 404, "زمان ملاقات یافت نشد.");
+    }
+
+    return successResponse(res, 200, reservations);
+  } catch (error) {
+    next(error);
+  }
+};
+
 exports.bookingAppointment = async (req, res, next) => {
   const session = await mongoose.startSession();
   session.startTransaction();
 
   try {
-    const { id } = req.body;
+    const { id } = req.params;
     const user = req.user;
 
     if (!isValidObjectId(id)) {
@@ -35,7 +57,7 @@ exports.bookingAppointment = async (req, res, next) => {
         },
       },
       { $set: { "availableTimes.$.isBooked": true } },
-      { new: true, session }
+      { session }
     );
 
     if (!booking) {
@@ -54,7 +76,10 @@ exports.bookingAppointment = async (req, res, next) => {
     });
 
     if (bookedSessions) {
-      bookedSessions.time.push(selectedTime.time);
+      bookedSessions.time.push({
+        startTime: selectedTime.time,
+        status: "reserved",
+      });
       await bookedSessions.save({ session });
     } else {
       await bookingModel.create(
@@ -63,13 +88,14 @@ exports.bookingAppointment = async (req, res, next) => {
             user: user._id,
             psychologistID: booking.psychologistID,
             date: new Date(booking.date),
-            time: selectedTime.time,
-            status: "reserved",
+            time: [{ startTime: selectedTime.time, status: "reserved" }],
           },
         ],
         { session }
       );
     }
+
+    await session.commitTransaction();
 
     const psychologist = await userModel
       .findOne({
@@ -83,8 +109,6 @@ exports.bookingAppointment = async (req, res, next) => {
       envConfigs.otp.psychologistReminderVariable,
       psychologist.name
     );
-
-    await session.commitTransaction();
 
     return successResponse(res, 201, "نوبت شما با موفقیت ثبت شد.");
   } catch (error) {
@@ -100,23 +124,16 @@ exports.bookingAppointment = async (req, res, next) => {
   }
 };
 
-exports.getAll = async (req, res, next) => {
+exports.cancelBooking = async (req, res, next) => {
   try {
-    const user = req.user;
+    const { id } = req.params;
+    const { time } = req.body;
 
-    const filter = user.role === "ADMIN" ? {} : { user: user._id };
-
-    const reservations = await bookingModel
-      .find(filter)
-      .populate("psychologistID", "name")
-      .select("-__v")
-      .lean();
-
-    if (!reservations.length) {
-      return errorResponse(res, 404, "زمان ملاقات یافت نشد.");
+    if (!isValidObjectId(id)) {
+      return errorResponse(res, 409, "آیدی وارد شده صحیح نمی باشد.");
     }
 
-    return successResponse(res, 200, reservations);
+    const cancel = await bookingModel.findOne({});
   } catch (error) {
     next(error);
   }
