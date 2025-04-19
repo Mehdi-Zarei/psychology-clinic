@@ -5,15 +5,17 @@ const authGuard = require("../../../middlewares/authGuard");
 
 //* Controllers
 const {
-  bookingAppointment,
   getAll,
+  bookingAppointment,
+  cancelBooking,
   getReviews,
 } = require("./booking.controller");
 
-router
-  .route("/")
-  .post(authGuard(), bookingAppointment)
-  .get(authGuard(), getAll);
+router.route("/").get(authGuard(), getAll);
+
+router.route("/:id").post(authGuard(), bookingAppointment);
+
+router.route("/:id/cancel").patch(authGuard(), cancelBooking);
 
 router.route("/reviews").get(authGuard(), getReviews);
 
