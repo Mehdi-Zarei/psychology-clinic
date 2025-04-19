@@ -18,11 +18,18 @@ const bookingSchema = new mongoose.Schema(
     },
     time: [
       {
-        startTime: { type: String, required: true },
+        startTime: {
+          type: String,
+          required: true,
+        },
         status: {
           type: String,
           enum: ["reserved", "canceled", "done"],
           default: "reserved",
+        },
+        availableTimeId: {
+          type: mongoose.Schema.Types.ObjectId,
+          required: true,
         },
       },
     ],
