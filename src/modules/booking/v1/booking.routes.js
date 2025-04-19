@@ -4,8 +4,17 @@ const router = express.Router();
 const authGuard = require("../../../middlewares/authGuard");
 
 //* Controllers
-const { bookingAppointment } = require("./booking.controller");
+const {
+  bookingAppointment,
+  getAll,
+  getReviews,
+} = require("./booking.controller");
 
-router.route("/:id").post(authGuard(), bookingAppointment);
+router
+  .route("/")
+  .post(authGuard(), bookingAppointment)
+  .get(authGuard(), getAll);
+
+router.route("/reviews").get(authGuard(), getReviews);
 
 module.exports = router;
