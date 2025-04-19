@@ -79,7 +79,9 @@ exports.bookingAppointment = async (req, res, next) => {
       bookedSessions.time.push({
         startTime: selectedTime.time,
         status: "reserved",
+        availableTimeId: selectedTime._id,
       });
+
       await bookedSessions.save({ session });
     } else {
       await bookingModel.create(
@@ -88,7 +90,13 @@ exports.bookingAppointment = async (req, res, next) => {
             user: user._id,
             psychologistID: booking.psychologistID,
             date: new Date(booking.date),
-            time: [{ startTime: selectedTime.time, status: "reserved" }],
+            time: [
+              {
+                startTime: selectedTime.time,
+                status: "reserved",
+                availableTimeId: selectedTime._id,
+              },
+            ],
           },
         ],
         { session }
@@ -127,13 +135,39 @@ exports.bookingAppointment = async (req, res, next) => {
 exports.cancelBooking = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { time } = req.body;
 
     if (!isValidObjectId(id)) {
       return errorResponse(res, 409, "آیدی وارد شده صحیح نمی باشد.");
     }
 
-    const cancel = await bookingModel.findOne({});
+    const cancel = await bookingModel.findOne(
+      {
+        time: { $elemMatch: { _id: id, status: "reserved" } },
+      }
+      // { $set: { "time.$.status": "canceled" } }
+    );
+
+    // if (!cancel) {
+    //   return errorResponse(res, 409, "این زمان ملاقات قبلا لغو شده است.");
+    // }
+
+    console.log("cancel", cancel);
+
+    const selectedTime = cancel.time.find((item) => {
+      item._id.toString() === id.toString();
+    });
+
+    console.log("selectedTime", selectedTime);
+
+    const newSchedule = await scheduleModel.findOneAndUpdate({
+      date: cancel.date,
+      psychologistID: cancel.psychologistID,
+      availableTimes: cancel.startTime,
+    });
+
+    // console.log(newSchedule);
+
+    // return successResponse(res, 200, "زمان ملاقات شما با موفقیت لغو گردید.");
   } catch (error) {
     next(error);
   }
