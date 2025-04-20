@@ -21,6 +21,7 @@ exports.getAll = async (req, res, next) => {
 
     const reservations = await bookingModel
       .find(filter)
+      .populate("user", "name")
       .populate("psychologistID", "name")
       .select("-__v")
       .lean();
@@ -65,9 +66,12 @@ exports.bookingAppointment = async (req, res, next) => {
       return errorResponse(res, 400, "متاسفانه این نوبت قبلا رزرو شده است.");
     }
 
-    const selectedTime = booking.availableTimes.find(
+    const startTime = booking.availableTimes.find(
       (item) => item._id.toString() === id.toString()
     );
+
+    const endTime = new Date(startTime.time);
+    endTime.setMinutes(endTime.getMinutes() + 50);
 
     const bookedSessions = await bookingModel.findOne({
       user: user._id,
@@ -77,9 +81,10 @@ exports.bookingAppointment = async (req, res, next) => {
 
     if (bookedSessions) {
       bookedSessions.time.push({
-        startTime: selectedTime.time,
+        startTime: startTime.time,
+        endTime,
         status: "reserved",
-        availableTimeId: selectedTime._id,
+        availableTimeId: startTime._id,
       });
 
       await bookedSessions.save({ session });
@@ -92,9 +97,10 @@ exports.bookingAppointment = async (req, res, next) => {
             date: new Date(booking.date),
             time: [
               {
-                startTime: selectedTime.time,
+                startTime: startTime.time,
+                endTime,
                 status: "reserved",
-                availableTimeId: selectedTime._id,
+                availableTimeId: startTime._id,
               },
             ],
           },
@@ -153,10 +159,10 @@ exports.cancelBooking = async (req, res, next) => {
       return errorResponse(res, 409, "این زمان ملاقات قبلا لغو شده است.");
     }
 
-    const selectedTime = cancel.time.find((item) => item._id.toString() === id);
+    const startTime = cancel.time.find((item) => item._id.toString() === id);
 
     await scheduleModel.findOneAndUpdate(
-      { "availableTimes._id": selectedTime.availableTimeId },
+      { "availableTimes._id": startTime.availableTimeId },
       { $set: { "availableTimes.$.isBooked": false } }
     );
 
