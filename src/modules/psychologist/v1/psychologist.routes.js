@@ -10,10 +10,6 @@ const {
   getAll,
   getOne,
   remove,
-  getReviews,
-  createReview,
-  acceptReview,
-  removeReview,
 } = require("./psychologist.controller");
 
 //* Uploader
@@ -22,10 +18,7 @@ const upload = multerStorage("public/images/profile", 500, [".jpg", ".jpeg"]);
 
 //* Validator
 const { bodyValidator } = require("../../../middlewares/validator");
-const {
-  psychologistSchema,
-  createReviewSchema,
-} = require("./psychologist.validator");
+const { psychologistSchema } = require("./psychologist.validator");
 
 //* Routes
 
@@ -43,14 +36,5 @@ router
   .route("/:id")
   .get(getOne)
   .delete(authGuard(["ADMIN"]), remove);
-
-router
-  .route("/:id/reviews")
-  .get(getReviews)
-  .post(authGuard(), bodyValidator(createReviewSchema), createReview);
-
-router.route("/review/:id/accept").patch(authGuard(["ADMIN"]), acceptReview);
-
-router.route("/review/:id/remove").delete(authGuard(["ADMIN"]), removeReview);
 
 module.exports = router;
