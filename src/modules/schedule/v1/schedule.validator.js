@@ -9,14 +9,11 @@ const setAvailableTimeSchema = Joi.object({
   availableTimes: Joi.array()
     .items(
       Joi.object({
-        time: Joi.string()
-          .pattern(/^([01]([0-9])|2[0-3]):([0-5][0-9])$/)
-          .required()
-          .messages({
-            "string.pattern.base":
-              "فرمت ساعت صحیح نیست! ساعت باید به شکل HH:mm (مثال: 01:00) باشد.",
-            "any.required": "ساعت ضروری است!",
-          }),
+        time: Joi.string().isoDate().required().messages({
+          "string.pattern.base":
+            "فرمت ساعت صحیح نیست! ساعت باید به شکل HH:mm (مثال: 01:00) باشد.",
+          "any.required": "ساعت ضروری است!",
+        }),
 
         isBooked: Joi.boolean().required().messages({
           "any.required": "وضعیت رزرو ضروری است!",
@@ -41,13 +38,10 @@ const editAppointmentDateSchema = Joi.object({
 
 const editAppointmentTimeSchema = Joi.object({
   newTime: Joi.object({
-    time: Joi.string()
-      .pattern(/^([01]([0-9])|2[0-3]):([0-5][0-9])$/)
-      .required()
-      .messages({
-        "string.pattern.base": "فرمت ساعت صحیح نیست! باید به شکل HH:mm باشد.",
-        "any.required": "ساعت ضروری است!",
-      }),
+    time: Joi.string().isoDate().required().messages({
+      "string.pattern.base": "فرمت ساعت صحیح نیست! باید به شکل HH:mm باشد.",
+      "any.required": "ساعت ضروری است!",
+    }),
     isBooked: Joi.boolean().required().messages({
       "any.required": "وضعیت رزرو ضروری است!",
     }),
