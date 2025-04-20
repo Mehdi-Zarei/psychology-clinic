@@ -195,6 +195,7 @@ exports.getReviews = async (req, res, next) => {
 
     const allReviews = await psychologistModel
       .find(filter)
+      .populate("reviews.user", "name")
       .populate("psychologistID", "name")
       .select("avatar rating reviews");
 
