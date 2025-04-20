@@ -7,7 +7,6 @@ const {
 
 const bookingModel = require("../../../model/Booking");
 const scheduleModel = require("../../../model/Schedule");
-const psychologistModel = require("../../../model/Psychologist");
 const userModel = require("../../../model/User");
 
 const sentSms = require("../../../service/otp");
@@ -177,33 +176,6 @@ exports.cancelBooking = async (req, res, next) => {
     );
 
     return successResponse(res, 200, "زمان ملاقات شما با موفقیت لغو گردید.");
-  } catch (error) {
-    next(error);
-  }
-};
-
-exports.getReviews = async (req, res, next) => {
-  try {
-    const user = req.user;
-
-    const filter =
-      user.role === "ADMIN"
-        ? {}
-        : {
-            reviews: { $elemMatch: { user: user._id } },
-          };
-
-    const allReviews = await psychologistModel
-      .find(filter)
-      .populate("reviews.user", "name")
-      .populate("psychologistID", "name")
-      .select("avatar rating reviews");
-
-    if (!allReviews.length) {
-      return errorResponse(res, 400, "شما تاکنون نظری ثبت نکرده اید.");
-    }
-
-    return successResponse(res, 200, allReviews);
   } catch (error) {
     next(error);
   }
