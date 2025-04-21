@@ -39,13 +39,10 @@ const psychologistSchema = new mongoose.Schema(
     },
     reviews: [
       {
-        user: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "user",
-        },
-        comment: String,
-        stars: Number,
-        isAccept: { type: Boolean, default: false },
+        user: { type: mongoose.Schema.Types.ObjectId, ref: "user" },
+        comment: { type: String, required: true },
+        stars: { type: Number, required: true, default: 5 },
+        isAccept: { type: Boolean, required: true, default: false },
       },
     ],
   },
