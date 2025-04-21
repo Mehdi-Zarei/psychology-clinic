@@ -18,12 +18,12 @@ const { bodyValidator } = require("../../../middlewares/validator");
 const { createReviewSchema } = require("./reviews.validator");
 
 //* Routes
-router
-  .route("/")
-  .get(authGuard(), getUserReviews)
-  .post(authGuard(), bodyValidator(createReviewSchema), createReview);
+router.route("/").get(authGuard(), getUserReviews);
 
-router.route("/psychologists/:id").get(getPsychologistReviews);
+router
+  .route("/psychologists/:id")
+  .get(getPsychologistReviews)
+  .post(authGuard(), bodyValidator(createReviewSchema), createReview);
 
 router.route("/:id/accept").patch(authGuard(["ADMIN"]), acceptReview);
 
