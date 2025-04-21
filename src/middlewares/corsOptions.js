@@ -1,5 +1,5 @@
-exports.corseOptions = {
-  origin: "*", //  Access-Control-Allow-Origin: "*"
-  methods: ["GET", "POST", "PUT", "DELETE"], //  Access-Control-Allow-Methods
-  allowedHeaders: ["Content-Type", "Authorization"], //  Access-Control-Allow-Headers
+exports.corsOptions = {
+  origin: "*",
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+  allowedHeaders: ["Content-Type", "Authorization"],
 };
