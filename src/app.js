@@ -12,6 +12,7 @@ const scheduleRoutes = require("./modules/schedule/v1/schedule.routes");
 const bookingRoutes = require("./modules/booking/v1/booking.routes");
 const psychologistRoutes = require("./modules/psychologist/v1/psychologist.routes");
 const reviewRoutes = require("././modules/reviews/v1/reviews.routes");
+const articleRoutes = require("././modules/article/v1/article.routes");
 
 //* Built-in Middlewares
 
@@ -28,6 +29,7 @@ app.use("/api/v1/schedule", scheduleRoutes);
 app.use("/api/v1/book", bookingRoutes);
 app.use("/api/v1/psychologist", psychologistRoutes);
 app.use("/api/v1/reviews", reviewRoutes);
+app.use("/api/v1/articles", articleRoutes);
 
 //* 404 Error Handler
 
