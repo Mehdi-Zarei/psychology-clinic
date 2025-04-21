@@ -1,3 +1,10 @@
+const { isValidObjectId } = require("mongoose");
+
+const {
+  successResponse,
+  errorResponse,
+} = require("../../../helper/responseMessage");
+
 const psychologistModel = require("../../../model/Psychologist");
 
 exports.getUserReviews = async (req, res, next) => {
@@ -46,17 +53,17 @@ exports.getPsychologistReviews = async (req, res, next) => {
       return errorResponse(res, 404, "متاسفانه روانشناسی یافت نشد.");
     }
 
-    if (!psychologist.reviews.length) {
+    const acceptedReviews = (psychologist.reviews = psychologist.reviews.filter(
+      (review) => review.isAccept === true
+    ));
+
+    if (!acceptedReviews.length) {
       return errorResponse(
         res,
         404,
         "برای این روانشناس هنوز نظری ثبت نشده!شما اولین نفری باشید که نظر میدهید."
       );
     }
-
-    psychologist.reviews = psychologist.reviews.filter(
-      (review) => review.isAccept === true
-    );
 
     return successResponse(res, 200, psychologist);
   } catch (error) {
@@ -119,13 +126,17 @@ exports.acceptReview = async (req, res, next) => {
 
     const acceptReview = await psychologistModel.findOneAndUpdate(
       {
-        "reviews._id": id,
+        reviews: { $elemMatch: { _id: id, isAccept: false } },
       },
       { $set: { "reviews.$.isAccept": true } }
     );
 
     if (!acceptReview) {
-      return errorResponse(res, 404, "کامنت یافت نشد!");
+      return errorResponse(
+        res,
+        404,
+        "این نظر قبلا تائید شده است یا وجود ندارد."
+      );
     }
 
     const totalStars = acceptReview.reviews.reduce(
