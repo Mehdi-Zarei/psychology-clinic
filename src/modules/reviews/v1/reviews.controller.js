@@ -6,6 +6,7 @@ const {
 } = require("../../../helper/responseMessage");
 
 const psychologistModel = require("../../../model/Psychologist");
+const articleModel = require("../../../model/Article");
 
 exports.getUserReviews = async (req, res, next) => {
   try {
@@ -96,14 +97,6 @@ exports.createReview = async (req, res, next) => {
       isAccept: false,
     });
 
-    // const totalStars = psychologist.reviews.reduce(
-    //   (sum, review) => sum + review.stars,
-    //   0
-    // );
-
-    // const averageRating = totalStars / psychologist.reviews.length;
-
-    // psychologist.rating = averageRating;
     await psychologist.save();
 
     return successResponse(
@@ -181,8 +174,54 @@ exports.removePsychologistsReview = async (req, res, next) => {
   }
 };
 
+exports.createArticleReview = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { comment, stars } = req.body;
+    const user = req.user;
+
+    if (!isValidObjectId(id)) {
+      return errorResponse(res, 409, "آیدی وارد شده معتبر نمی باشد.");
+    }
+
+    const addReview = await articleModel.findByIdAndUpdate(id, {
+      $push: { reviews: { user: user._id, comment, stars, isAccept: false } },
+    });
+
+    if (!addReview) {
+      return errorResponse(res, 404, "مقاله یافت نشد.");
+    }
+
+    return successResponse(
+      res,
+      201,
+      "نظر شما با موفقیت ثبت شد و پس از تائید مدیر بصورت عمومی نمایش داده خواهد شد."
+    );
+  } catch (error) {
+    next(error);
+  }
+};
+
 exports.acceptArticleReview = async (req, res, next) => {
   try {
+    const { id } = req.params;
+
+    if (!isValidObjectId(id)) {
+      return errorResponse(res, 409, "آیدی وارد شده معتبر نمی باشد.");
+    }
+
+    const accept = await articleModel.findOneAndUpdate(
+      {
+        reviews: { $elemMatch: { _id: id, isAccept: false } },
+      },
+      { "reviews.$.isAccept": true }
+    );
+
+    if (!accept) {
+      return errorResponse(res, 404, "این نظر قبلا تائید و یا حذف شده است.");
+    }
+
+    return successResponse(res, 200, "عملیات با موفقیت انجام شد.");
   } catch (error) {
     next(error);
   }
@@ -190,6 +229,24 @@ exports.acceptArticleReview = async (req, res, next) => {
 
 exports.removeArticleReview = async (req, res, next) => {
   try {
+    const { id } = req.params;
+
+    if (!isValidObjectId(id)) {
+      return errorResponse(res, 409, "آیدی وارد شده معتبر نمی باشد.");
+    }
+
+    const remove = await articleModel.updateOne(
+      {
+        "reviews._id": id,
+      },
+      { $pull: { reviews: { _id: id } } }
+    );
+
+    if (!remove.modifiedCount) {
+      return errorResponse(res, 404, "این نظر قبلا حذف شده است.");
+    }
+
+    return successResponse(res, 200, "عملیات با موفقیت انجام شد.");
   } catch (error) {
     next(error);
   }
