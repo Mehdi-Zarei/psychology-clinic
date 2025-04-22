@@ -117,17 +117,16 @@ exports.getOne = async (req, res, next) => {
     const { slug } = req.params;
 
     const article = await articleModel
-      .findOneAndUpdate(
-        { slug, isPublished: true },
-        { $inc: { views: 1 } },
-        { new: true }
-      )
+      .findOneAndUpdate({ slug, isPublished: true }, { $inc: { views: 1 } })
       .populate("author", "name")
+      .populate("reviews.user", "name")
       .lean();
 
     if (!article) {
       return errorResponse(res, 404, "مقاله ای  با این اسلاگ پیدا نشد.");
     }
+
+    article.reviews = article.reviews.filter((item) => item.isAccept === true);
 
     return successResponse(res, 200, article);
   } catch (error) {
