@@ -25,7 +25,7 @@ router
   .post(authGuard("ADMIN"), upload.array("images", 10), create);
 
 router
-  .route("/:id")
+  .route("/:slug")
   .get(getOne)
   .patch(authGuard("ADMIN"), edit)
   .delete(authGuard("ADMIN"), remove);
