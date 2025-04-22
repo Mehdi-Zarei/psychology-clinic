@@ -11,6 +11,7 @@ const {
   createReview,
   acceptPsychologistsReview,
   removePsychologistsReview,
+  createArticleReview,
   acceptArticleReview,
   removeArticleReview,
 } = require("./reviews.controller");
@@ -35,9 +36,14 @@ router
   .route("/psychologists/:id/remove")
   .delete(authGuard(["ADMIN"]), removePsychologistsReview);
 
+router.route("/articles/:id").post(authGuard(), createArticleReview);
+
 router
   .route("/articles/:id/accept")
-  .post(authGuard(["ADMIN"]), acceptArticleReview)
+  .patch(authGuard(["ADMIN"]), acceptArticleReview);
+
+router
+  .route("/articles/:id/remove")
   .delete(authGuard(["ADMIN"]), removeArticleReview);
 
 module.exports = router;
