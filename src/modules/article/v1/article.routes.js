@@ -12,6 +12,7 @@ const {
   edit,
   remove,
   changePublishStatus,
+  toggleLikeArticles,
 } = require("./article.controller");
 
 //* Uploader
@@ -32,5 +33,7 @@ router
   .patch(authGuard("ADMIN"), upload.array("images", 10), edit)
   .delete(authGuard("ADMIN"), remove)
   .put(authGuard("ADMIN"), changePublishStatus);
+
+router.route("/:id/like").post(authGuard(), toggleLikeArticles);
 
 module.exports = router;
