@@ -117,7 +117,11 @@ exports.getOne = async (req, res, next) => {
     const { slug } = req.params;
 
     const article = await articleModel
-      .findOne({ slug, isPublished: true })
+      .findOneAndUpdate(
+        { slug, isPublished: true },
+        { $inc: { views: 1 } },
+        { new: true }
+      )
       .populate("author", "name")
       .lean();
 
@@ -252,6 +256,44 @@ exports.changePublishStatus = async (req, res, next) => {
     }
 
     await changeStatus.save();
+    return successResponse(res, 200, message);
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.toggleLikeArticles = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const user = req.user;
+
+    if (!isValidObjectId(id)) {
+      return errorResponse(res, 409, "آیدی وارد شده صحیح نمی باشد.");
+    }
+
+    const article = await articleModel.findById(id);
+
+    if (!article) {
+      return errorResponse(res, 404, "مقاله یافت نشد.");
+    }
+
+    const hasLike = article.likes.users.includes(user._id);
+
+    let message = "";
+
+    if (hasLike) {
+      await articleModel.findByIdAndUpdate(id, {
+        $pull: { "likes.users": user._id },
+        $inc: { "likes.count": -1 },
+      });
+      message = "لایک مقاله برداشته شد.";
+    } else {
+      article.likes.count++;
+      article.likes.users.push(user._id);
+      message = "مقاله لایک شد.";
+      await article.save();
+    }
+
     return successResponse(res, 200, message);
   } catch (error) {
     next(error);
