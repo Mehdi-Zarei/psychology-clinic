@@ -1,6 +1,7 @@
 const { nanoid } = require("nanoid");
-const slugify = require("slugify");
 const { isValidObjectId } = require("mongoose");
+const slugify = require("slugify");
+const fs = require("fs");
 
 const {
   errorResponse,
@@ -8,7 +9,6 @@ const {
 } = require("../../../helper/responseMessage");
 
 const articleModel = require("../../../model/Article");
-const article = require("../../../model/Article");
 
 exports.getAll = async (req, res, next) => {
   try {
@@ -44,9 +44,24 @@ exports.create = async (req, res, next) => {
 
     const user = req.user;
 
+    let images = [];
+
+    if (req.files) {
+      images = req.files.map(
+        (images) => `public/images/articles/${images.filename}`
+      );
+    }
+
     const isArticleExist = await articleModel.findOne({ title }).lean();
 
     if (isArticleExist) {
+      if (req.files) {
+        req.files.forEach((file) => {
+          fs.unlinkSync(file.path, (err) => {
+            console.error(`❌ خطا در حذف فایل ${path}:`, err.message);
+          });
+        });
+      }
       return errorResponse(
         res,
         409,
@@ -74,14 +89,6 @@ exports.create = async (req, res, next) => {
 
     const generateSummery =
       summery || content.split(" ").slice(0, 50).join(" ") + "...";
-
-    let images = [];
-
-    if (req.files) {
-      images = req.files.map(
-        (images) => `public/images/articles/${images.filename}`
-      );
-    }
 
     await articleModel.create({
       title,
@@ -141,16 +148,11 @@ exports.edit = async (req, res, next) => {
       publishNow,
     } = req.body;
 
-    const user = req.user;
-
     if (!isValidObjectId(id)) {
       return errorResponse(res, 409, "آیدی وارد شده صحیح نمی باشد.");
     }
 
-    const mainArticle = await articleModel.findOne({
-      _id: id,
-      author: user._id,
-    });
+    const mainArticle = await articleModel.findOne({ _id: id });
 
     if (!mainArticle) {
       return errorResponse(res, 404, "مقاله ای جهت وبرایش پیدا نشد.");
@@ -166,15 +168,17 @@ exports.edit = async (req, res, next) => {
     mainArticle.isPublished = publishNow || mainArticle.isPublished;
 
     if (tags) {
-      Array.isArray(tags)
-        ? (mainArticle.tags = [...mainArticle.tags, ...tags])
-        : (mainArticle.tags = [...mainArticle.tags, tags]);
+      const currentTags = mainArticle.tags || [];
+      const newTags = Array.isArray(tags) ? tags : [tags];
+      mainArticle.tags = Array.from(new Set([...currentTags, ...newTags]));
     }
 
     if (category) {
-      Array.isArray(category)
-        ? (mainArticle.category = [...mainArticle.category, ...category])
-        : (mainArticle.category = [...mainArticle.category, category]);
+      const currentCategories = mainArticle.category || [];
+      const newCategories = Array.isArray(category) ? category : [category];
+      mainArticle.category = Array.from(
+        new Set([...currentCategories, ...newCategories])
+      );
     }
 
     if (req.files) {
@@ -195,6 +199,60 @@ exports.edit = async (req, res, next) => {
 
 exports.remove = async (req, res, next) => {
   try {
+    const { id } = req.params;
+
+    if (!isValidObjectId(id)) {
+      return errorResponse(res, 409, "آیدی وارد شده صحیح نمی باشد.");
+    }
+
+    const removeArticle = await articleModel.findOneAndDelete({ _id: id });
+
+    if (!removeArticle) {
+      return errorResponse(res, 200, "مقاله پیدا نشد..");
+    }
+
+    removeArticle.images.forEach((path) => {
+      if (fs.existsSync(path)) {
+        fs.unlinkSync(path, (err) => {
+          console.error(`❌ خطا در حذف فایل ${path}:`, err.message);
+        });
+      }
+    });
+
+    return successResponse(res, 200, "مقاله با موفقیت حذف گردید.");
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.changePublishStatus = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    if (!isValidObjectId(id)) {
+      return errorResponse(res, 409, "آیدی وارد شده صحیح نمی باشد.");
+    }
+
+    const changeStatus = await articleModel.findById(id);
+
+    if (!changeStatus) {
+      return errorResponse(res, 404, "مقاله یافت نشد.");
+    }
+
+    let message;
+
+    if (changeStatus.isPublished) {
+      changeStatus.isPublished = false;
+
+      message = "وضعیت مشاهده مقاله با موفقیت به حالت غیر عمومی تغییر یافت.";
+    } else {
+      changeStatus.isPublished = true;
+
+      message = "وضعیت مشاهده مقاله با موفقیت به حالت عمومی تغییر یافت.";
+    }
+
+    await changeStatus.save();
+    return successResponse(res, 200, message);
   } catch (error) {
     next(error);
   }
