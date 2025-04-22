@@ -26,6 +26,7 @@ const sentSms = require("../../../service/otp");
 
 const userModel = require("../../../model/User");
 const psychologistModel = require("../../../model/Psychologist");
+const bookingModel = require("../../../model/Booking");
 const envConfigs = require("../../../envConfigs");
 
 exports.sentOtp = async (req, res, next) => {
@@ -264,15 +265,32 @@ exports.getMe = async (req, res, next) => {
   try {
     const user = req.user;
 
-    const isPsychologistExist = await psychologistModel.findOne({
-      psychologistID: user._id,
-    });
+    const isPsychologistExist = await psychologistModel
+      .findOne({
+        psychologistID: user._id,
+      })
+      .populate("reviews.user", "name");
 
     if (isPsychologistExist) {
-      return successResponse(res, 200, { user, isPsychologistExist });
-    }
+      const appointmentHistory = await bookingModel
+        .find({
+          psychologistID: user._id,
+        })
+        .populate("user", "name")
+        .select("-psychologistID -__v");
 
-    return successResponse(res, 200, user);
+      return successResponse(res, 200, {
+        user,
+        isPsychologistExist,
+        appointmentHistory,
+      });
+    }
+    const bookingHistory = await bookingModel
+      .find({ user: user._id })
+      .populate("psychologistID", "name")
+      .select("-user -__v");
+
+    return successResponse(res, 200, { user, bookingHistory });
   } catch (error) {
     next(error);
   }
