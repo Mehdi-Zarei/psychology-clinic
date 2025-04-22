@@ -11,6 +11,7 @@ const {
   getOne,
   edit,
   remove,
+  changePublishStatus,
 } = require("./article.controller");
 
 //* Uploader
@@ -29,6 +30,7 @@ router.route("/:slug").get(getOne);
 router
   .route("/:id")
   .patch(authGuard("ADMIN"), upload.array("images", 10), edit)
-  .delete(authGuard("ADMIN"), remove);
+  .delete(authGuard("ADMIN"), remove)
+  .put(authGuard("ADMIN"), changePublishStatus);
 
 module.exports = router;
