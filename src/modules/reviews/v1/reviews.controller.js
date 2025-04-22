@@ -116,7 +116,7 @@ exports.createReview = async (req, res, next) => {
   }
 };
 
-exports.acceptReview = async (req, res, next) => {
+exports.acceptPsychologistsReview = async (req, res, next) => {
   try {
     const { id } = req.params;
 
@@ -156,7 +156,7 @@ exports.acceptReview = async (req, res, next) => {
   }
 };
 
-exports.removeReview = async (req, res, next) => {
+exports.removePsychologistsReview = async (req, res, next) => {
   try {
     const { id } = req.params;
 
@@ -176,6 +176,20 @@ exports.removeReview = async (req, res, next) => {
     }
 
     return successResponse(res, 200, "کامنت مورد نظر با موفقیت پاک شد.");
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.acceptArticleReview = async (req, res, next) => {
+  try {
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.removeArticleReview = async (req, res, next) => {
+  try {
   } catch (error) {
     next(error);
   }
