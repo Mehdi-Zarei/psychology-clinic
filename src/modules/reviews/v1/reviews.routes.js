@@ -9,8 +9,10 @@ const {
   getUserReviews,
   getPsychologistReviews,
   createReview,
-  acceptReview,
-  removeReview,
+  acceptPsychologistsReview,
+  removePsychologistsReview,
+  acceptArticleReview,
+  removeArticleReview,
 } = require("./reviews.controller");
 
 //* validator
@@ -25,8 +27,17 @@ router
   .get(getPsychologistReviews)
   .post(authGuard(), bodyValidator(createReviewSchema), createReview);
 
-router.route("/:id/accept").patch(authGuard(["ADMIN"]), acceptReview);
+router
+  .route("/psychologists/:id/accept")
+  .patch(authGuard(["ADMIN"]), acceptPsychologistsReview);
 
-router.route("/:id/remove").delete(authGuard(["ADMIN"]), removeReview);
+router
+  .route("/psychologists/:id/remove")
+  .delete(authGuard(["ADMIN"]), removePsychologistsReview);
+
+router
+  .route("/articles/:id/accept")
+  .post(authGuard(["ADMIN"]), acceptArticleReview)
+  .delete(authGuard(["ADMIN"]), removeArticleReview);
 
 module.exports = router;
