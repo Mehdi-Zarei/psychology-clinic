@@ -24,10 +24,11 @@ router
   .get(getAll)
   .post(authGuard("ADMIN"), upload.array("images", 10), create);
 
+router.route("/:slug").get(getOne);
+
 router
-  .route("/:slug")
-  .get(getOne)
-  .patch(authGuard("ADMIN"), edit)
+  .route("/:id")
+  .patch(authGuard("ADMIN"), upload.array("images", 10), edit)
   .delete(authGuard("ADMIN"), remove);
 
 module.exports = router;
