@@ -45,7 +45,7 @@ exports.getPsychologistReviews = async (req, res, next) => {
 
     const psychologist = await psychologistModel
       .findOne({
-        psychologistID: id,
+        _id: id,
       })
       .populate("reviews.user", "name")
       .select("reviews");
@@ -83,7 +83,7 @@ exports.createReview = async (req, res, next) => {
     }
 
     const psychologist = await psychologistModel.findOne({
-      psychologistID: id,
+      _id: id,
     });
 
     if (!psychologist) {
