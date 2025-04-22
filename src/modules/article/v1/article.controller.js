@@ -9,6 +9,16 @@ const articleModel = require("../../../model/Article");
 
 exports.getAll = async (req, res, next) => {
   try {
+    const articles = await articleModel
+      .find({ isPublished: true })
+      .populate("author", "name")
+      .lean();
+
+    if (!articles.length) {
+      return errorResponse(res, 404, "فعلا هیچ مقاله ای ثبت نشده است.");
+    }
+
+    return successResponse(res, 200, articles);
   } catch (error) {
     next(error);
   }
