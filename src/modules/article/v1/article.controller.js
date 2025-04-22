@@ -1,10 +1,12 @@
 const { nanoid } = require("nanoid");
 const slugify = require("slugify");
+const { isValidObjectId } = require("mongoose");
 
 const {
   errorResponse,
   successResponse,
 } = require("../../../helper/responseMessage");
+
 const articleModel = require("../../../model/Article");
 
 exports.getAll = async (req, res, next) => {
@@ -107,6 +109,22 @@ exports.create = async (req, res, next) => {
 
 exports.getOne = async (req, res, next) => {
   try {
+    const { slug } = req.params;
+
+    // if (!isValidObjectId(id)) {
+    //   return errorResponse(res, 409, "آیدی وارد شده صحیح نمی باشد.");
+    // }
+
+    const article = await articleModel
+      .findOne({ slug, isPublished: true })
+      .populate("author", "name")
+      .lean();
+
+    if (!article) {
+      return errorResponse(res, 404, "مقاله ای  با این اسلاگ پیدا نشد.");
+    }
+
+    return successResponse(res, 200, article);
   } catch (error) {
     next(error);
   }
