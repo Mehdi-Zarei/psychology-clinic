@@ -11,26 +11,11 @@ const {
   cancelBooking,
 } = require("./booking.controller");
 
-//* Validator
-const { bodyValidator } = require("../../../middlewares/validator");
-const {
-  bookingAppointmentSchema,
-  cancelBookingSchema,
-} = require("./booking.validator");
-
 //* Routes
 router.route("/").get(authGuard(), getAll);
 
-router
-  .route("/:id")
-  .post(
-    authGuard(),
-    bodyValidator(bookingAppointmentSchema),
-    bookingAppointment
-  );
+router.route("/:id").post(authGuard(), bookingAppointment);
 
-router
-  .route("/:id/cancel")
-  .patch(authGuard(), bodyValidator(cancelBookingSchema), cancelBooking);
+router.route("/:id/cancel").patch(authGuard(), cancelBooking);
 
 module.exports = router;
