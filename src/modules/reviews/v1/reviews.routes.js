@@ -8,7 +8,7 @@ const authGuard = require("../../../middlewares/authGuard");
 const {
   getUserReviews,
   getPsychologistReviews,
-  createReview,
+  createPsychologistsReview,
   acceptPsychologistsReview,
   removePsychologistsReview,
   createArticleReview,
@@ -26,7 +26,11 @@ router.route("/").get(authGuard(), getUserReviews);
 router
   .route("/psychologists/:id")
   .get(getPsychologistReviews)
-  .post(authGuard(), bodyValidator(createReviewSchema), createReview);
+  .post(
+    authGuard(),
+    bodyValidator(createReviewSchema),
+    createPsychologistsReview
+  );
 
 router
   .route("/psychologists/:id/accept")
@@ -36,7 +40,9 @@ router
   .route("/psychologists/:id/remove")
   .delete(authGuard(["ADMIN"]), removePsychologistsReview);
 
-router.route("/articles/:id").post(authGuard(), createArticleReview);
+router
+  .route("/articles/:id")
+  .post(authGuard(), bodyValidator(createReviewSchema), createArticleReview);
 
 router
   .route("/articles/:id/accept")
