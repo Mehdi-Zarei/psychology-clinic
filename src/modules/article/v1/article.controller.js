@@ -1,4 +1,5 @@
 const { nanoid } = require("nanoid");
+const Joi = require("joi");
 const { isValidObjectId } = require("mongoose");
 const slugify = require("slugify");
 const fs = require("fs");
@@ -9,6 +10,9 @@ const {
 } = require("../../../helper/responseMessage");
 
 const articleModel = require("../../../model/Article");
+
+//* Validator Schema
+const { slugParamsSchema, idParamsSchema } = require("./article.validator");
 
 exports.getAll = async (req, res, next) => {
   try {
@@ -116,8 +120,16 @@ exports.getOne = async (req, res, next) => {
   try {
     const { slug } = req.params;
 
+    Joi.attempt(req.params, slugParamsSchema, {
+      abortEarly: false,
+    });
+
     const article = await articleModel
-      .findOneAndUpdate({ slug, isPublished: true }, { $inc: { views: 1 } })
+      .findOneAndUpdate(
+        { slug, isPublished: true },
+        { $inc: { views: 1 } },
+        { new: true }
+      )
       .populate("author", "name")
       .populate("reviews.user", "name")
       .lean();
