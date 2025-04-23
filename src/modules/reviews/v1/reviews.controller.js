@@ -72,7 +72,7 @@ exports.getPsychologistReviews = async (req, res, next) => {
   }
 };
 
-exports.createReview = async (req, res, next) => {
+exports.createPsychologistsReview = async (req, res, next) => {
   try {
     const { id } = req.params;
     const { comment, stars } = req.body;
