@@ -1,0 +1,139 @@
+openapi: 3.0.0
+info:
+  title: OTP API
+  description: API for sending one-time passwords (OTP) via SMS to users.
+  version: 1.0.0
+paths:
+  /auth/sent:
+    post:
+      summary: Sends OTP to the specified phone number.
+      operationId: sendOtp
+      tags:
+        - OTP
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                phone:
+                  type: string
+                  description: The phone number to send the OTP to.
+                  example: "09123456789"
+              required:
+                - phone
+      responses:
+        "200":
+          description: OTP sent successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "کد ورود به شماره موبایل وارد شده باموفقیت ارسال گردید."
+        "409":
+          description: User is restricted or OTP already sent recently.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "کد یکبارمصرف قبلا برای شما ارسال گردیده است.لطفا پس از 5 دقیقه مجدد تلاش کنید."
+        "500":
+          description: Error in sending OTP via SMS.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "خطا در ارسال کد یکبار مصرف،لطفا مجدد تلاش فرمائید."
+        "400":
+          description: Bad request due to invalid phone number or request format.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Invalid phone number format."
+  /auth/verify:
+    post:
+      summary: Verifies OTP and logs in the user.
+      operationId: verifyOtp
+      tags:
+        - OTP
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                phone:
+                  type: string
+                  description: The phone number associated with the OTP.
+                  example: "09123456789"
+                otpCode:
+                  type: string
+                  description: The OTP code received by the user.
+                  example: "12345"
+              required:
+                - phone
+                - otpCode
+      responses:
+        "200":
+          description: User successfully logged in and received access and refresh tokens.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "شما با موفقیت وارد حساب کاربری خود شدید."
+                  accessToken:
+                    type: string
+                    description: Access token for authenticated user.
+                    example: "your-access-token-here"
+                  refreshToken:
+                    type: string
+                    description: Refresh token for session management.
+                    example: "your-refresh-token-here"
+        "403":
+          description: Invalid OTP or OTP has expired, or user account is restricted.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "کد وارد شده صحیح نمی باشد و یا مدت زمان آن به پایان رسیده است."
+        "404":
+          description: User not found, and needs to be redirected to the registration page.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Redirect To Register Page."
+        "400":
+          description: Bad request due to missing or invalid phone number or OTP format.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Invalid phone number or OTP format."
