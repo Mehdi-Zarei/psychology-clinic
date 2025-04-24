@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const envConfigs = require("../envConfigs");
+const loadBookingJobs = require("../utils/scheduler");
 
 const connectToDatabase = async () => {
   try {
@@ -7,6 +8,7 @@ const connectToDatabase = async () => {
     console.log(
       `✅ Connected to MongoDB successfully on : ${mongoose.connection.host}.`
     );
+    loadBookingJobs();
   } catch (error) {
     console.error("❌ Failed to connect to MongoDB:", error.message);
     process.exit(1);
