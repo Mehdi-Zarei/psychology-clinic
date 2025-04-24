@@ -14,6 +14,9 @@ const psychologistRoutes = require("./modules/psychologist/v1/psychologist.route
 const reviewRoutes = require("././modules/reviews/v1/reviews.routes");
 const articleRoutes = require("././modules/article/v1/article.routes");
 
+//* Swagger Doc
+const { swaggerUi, swaggerSpec } = require("./utils/swagger.js");
+
 //* Built-in Middlewares
 
 app.use(express.json());
@@ -30,6 +33,7 @@ app.use("/api/v1/book", bookingRoutes);
 app.use("/api/v1/psychologist", psychologistRoutes);
 app.use("/api/v1/reviews", reviewRoutes);
 app.use("/api/v1/articles", articleRoutes);
+app.use("/apis/v1", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 //* 404 Error Handler
 
