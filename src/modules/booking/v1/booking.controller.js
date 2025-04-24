@@ -11,6 +11,7 @@ const userModel = require("../../../model/User");
 
 const sentSms = require("../../../service/otp");
 const envConfigs = require("../../../envConfigs");
+const setBookingJob = require("../../../utils/setBookingJob");
 
 exports.getAll = async (req, res, next) => {
   try {
@@ -79,16 +80,19 @@ exports.bookingAppointment = async (req, res, next) => {
     });
 
     if (bookedSessions) {
-      bookedSessions.time.push({
+      const newSlot = {
         startTime: startTime.time,
         endTime,
         status: "reserved",
         availableTimeId: startTime._id,
-      });
+      };
 
+      bookedSessions.time.push(newSlot);
       await bookedSessions.save({ session });
+
+      setBookingJob(bookedSessions);
     } else {
-      await bookingModel.create(
+      const [newBooking] = await bookingModel.create(
         [
           {
             user: user._id,
@@ -106,6 +110,7 @@ exports.bookingAppointment = async (req, res, next) => {
         ],
         { session }
       );
+      setBookingJob(newBooking);
     }
 
     await session.commitTransaction();
