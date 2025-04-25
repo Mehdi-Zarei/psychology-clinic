@@ -5,7 +5,7 @@ paths:
       tags:
         - Psychologists
       security:
-        - bearerAuth: []
+        - accessToken: []
       requestBody:
         required: true
         content:
@@ -74,7 +74,7 @@ paths:
       tags:
         - Psychologists
       security:
-        - bearerAuth: []
+        - accessToken: []
       responses:
         "200":
           description: Successfully retrieved psychologists
@@ -170,7 +170,7 @@ paths:
       tags:
         - Psychologists
       security:
-        - bearerAuth: []
+        - accessToken: []
       parameters:
         - name: id
           in: path
