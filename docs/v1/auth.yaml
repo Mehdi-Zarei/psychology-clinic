@@ -9,7 +9,7 @@ paths:
       summary: Sends OTP to the specified phone number.
       operationId: sendOtp
       tags:
-        - OTP
+        - Auth
       requestBody:
         required: true
         content:
@@ -69,7 +69,7 @@ paths:
       summary: Verifies OTP and logs in the user.
       operationId: verifyOtp
       tags:
-        - OTP
+        - Auth
       requestBody:
         required: true
         content:
@@ -284,7 +284,7 @@ paths:
       tags:
         - Auth
       security:
-        - bearerAuth: []
+        - accessToken: []
       responses:
         "200":
           description: Logout successful
@@ -323,7 +323,7 @@ paths:
       tags:
         - Auth
       security:
-        - bearerAuth: []
+        - accessToken: []
       responses:
         "200":
           description: Access token generated successfully
@@ -362,9 +362,9 @@ paths:
     get:
       summary: Get current user profile and booking history
       tags:
-        - Profile
+        - Auth
       security:
-        - bearerAuth: []
+        - accessToken: []
       responses:
         "200":
           description: دریافت اطلاعات کاربر و تاریخچه نوبت‌ها با موفقیت انجام شد.
@@ -404,9 +404,9 @@ paths:
       summary: Update current user profile
       operationId: updateProfile
       tags:
-        - Profile
+        - Auth
       security:
-        - bearerAuth: []
+        - accessToken: []
       requestBody:
         required: true
         content:
