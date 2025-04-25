@@ -137,3 +137,302 @@ paths:
                   message:
                     type: string
                     example: "Invalid phone number or OTP format."
+  /auth/register:
+    post:
+      summary: register User
+      operationId: registerUser
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: "Ali Rezaei"
+                email:
+                  type: string
+                  format: email
+                  example: "ali@example.com"
+                phone:
+                  type: string
+                  example: "09123456789"
+                password:
+                  type: string
+                  format: password
+                  example: "securepassword123"
+              required:
+                - name
+                - email
+                - phone
+                - password
+      responses:
+        "201":
+          description: ثبت‌نام با موفقیت انجام شد.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "ثبت نام با موفقیت انجام شد."
+                  accessToken:
+                    type: string
+                    example: "your-access-token"
+                  refreshToken:
+                    type: string
+                    example: "your-refresh-token"
+        "409":
+          description: ایمیل یا شماره موبایل تکراری است.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "این آدرس ایمیل و یا شماره موبایل تکراری است."
+        "400":
+          description: اطلاعات ورودی معتبر نیستند.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "خطا در اعتبارسنجی اطلاعات ورودی"
+  /auth/login:
+    post:
+      summary: User login with email or phone
+      operationId: loginUser
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                identifier:
+                  type: string
+                  example: "09123456789"
+                  description: Email or phone number
+                password:
+                  type: string
+                  format: password
+                  example: "securepassword123"
+              required:
+                - identifier
+                - password
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "شما با موفقیت وارد حساب کاربری خودتون شدید."
+                  accessToken:
+                    type: string
+                    example: "your-access-token"
+                  refreshToken:
+                    type: string
+                    example: "your-refresh-token"
+        "403":
+          description: Forbidden - incorrect credentials or restricted account
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "نام کاربری و یا رمز عبور صحیح نمی باشد."
+        "404":
+          description: User not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "حساب کاربری پیدا نشد."
+        "400":
+          description: Invalid input data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "ورودی نامعتبر است."
+  /auth/logout:
+    post:
+      summary: Logout the authenticated user
+      operationId: logoutUser
+      tags:
+        - Auth
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Logout successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "شما با موفقیت از حساب کاربری خود خارج شدید."
+        "401":
+          description: Unauthorized - token missing or invalid
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "دسترسی غیرمجاز."
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "خطایی در سرور رخ داده است."
+  /auth/refresh:
+    get:
+      summary: Generate a new access token using a valid refresh token
+      operationId: refreshAccessToken
+      tags:
+        - Auth
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Access token generated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "توکن دسترسی جدید ایجاد شد."
+                  data:
+                    type: string
+                    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        "401":
+          description: Unauthorized - invalid or missing token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "دسترسی غیرمجاز."
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "خطایی در سرور رخ داده است."
+  /auth/me:
+    get:
+      summary: Get current user profile and booking history
+      tags:
+        - Profile
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: دریافت اطلاعات کاربر و تاریخچه نوبت‌ها با موفقیت انجام شد.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "عملیات موفقیت‌آمیز بود."
+                  data:
+                    type: object
+                    properties:
+                      user:
+                        type: object
+                        description: اطلاعات کاربر
+                      isPsychologistExist:
+                        type: object
+                        nullable: true
+                        description: اطلاعات روانشناس (در صورت وجود)
+                      appointmentHistory:
+                        type: array
+                        items:
+                          type: object
+                        description: لیست نوبت‌ها برای روانشناس
+                      bookingHistory:
+                        type: array
+                        items:
+                          type: object
+                        description: لیست نوبت‌های کاربر
+        "401":
+          description: نیاز به احراز هویت دارد.
+        "500":
+          description: خطای سرور داخلی.
+    patch:
+      summary: Update current user profile
+      operationId: updateProfile
+      tags:
+        - Profile
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: "Ali Rezaei"
+                email:
+                  type: string
+                  format: email
+                  example: "ali@example.com"
+                aboutMe:
+                  type: string
+                  example: "روانشناس کودک با تجربه‌ی ۵ ساله"
+                avatar:
+                  type: string
+                  format: binary
+      responses:
+        "200":
+          description: پروفایل شما با موفقیت بروزرسانی گردید.
+        "400":
+          description: اطلاعات ارسالی معتبر نیست.
+        "401":
+          description: نیاز به احراز هویت دارد.
+        "500":
+          description: خطای سرور داخلی.
