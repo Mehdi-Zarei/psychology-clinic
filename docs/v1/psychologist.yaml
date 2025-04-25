@@ -1,0 +1,197 @@
+paths:
+  /psychologist:
+    post:
+      summary: Register a new psychologist
+      tags:
+        - Psychologists
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                psychologistID:
+                  type: string
+                  example: "60a6ec9b8f1b2c001fd1d3c9"
+                education:
+                  type: string
+                  example: "PhD in Clinical Psychology"
+                licenseNumber:
+                  type: string
+                  example: "12345678"
+                aboutMe:
+                  type: string
+                  example: "Experienced child psychologist with 5 years of practice."
+                specialization:
+                  type: string
+                  example: "Child Psychology"
+                experienceYears:
+                  type: integer
+                  example: 5
+                avatar:
+                  type: string
+                  format: binary
+      responses:
+        "201":
+          description: Psychologist registered successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "ثبت نام با موفقیت انجام شد"
+                  data:
+                    type: object
+                    properties:
+                      psychologistID:
+                        type: string
+                      education:
+                        type: string
+                      licenseNumber:
+                        type: string
+                      aboutMe:
+                        type: string
+                      specialization:
+                        type: string
+                      experienceYears:
+                        type: integer
+                      avatar:
+                        type: string
+        "409":
+          description: Psychologist with this license number already exists
+        "400":
+          description: Invalid request data
+        "500":
+          description: Internal server error
+
+    get:
+      summary: Get a list of all psychologists
+      tags:
+        - Psychologists
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Successfully retrieved psychologists
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    psychologistID:
+                      type: string
+                    education:
+                      type: string
+                    licenseNumber:
+                      type: string
+                    aboutMe:
+                      type: string
+                    specialization:
+                      type: string
+                    experienceYears:
+                      type: integer
+                    avatar:
+                      type: string
+                    rating:
+                      type: number
+                      format: float
+        "404":
+          description: No psychologists found
+        "500":
+          description: Internal server error
+  /psychologist/{id}:
+    get:
+      summary: Get details of a specific psychologist
+      tags:
+        - Psychologists
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Psychologist ID
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Successfully retrieved psychologist details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  psychologistID:
+                    type: string
+                  education:
+                    type: string
+                  licenseNumber:
+                    type: string
+                  aboutMe:
+                    type: string
+                  specialization:
+                    type: string
+                  experienceYears:
+                    type: integer
+                  avatar:
+                    type: string
+                  schedules:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        date:
+                          type: string
+                          format: date
+                        availableTimes:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              time:
+                                type: string
+                                format: date-time
+                              isBooked:
+                                type: boolean
+        "404":
+          description: Psychologist not found
+        "409":
+          description: Invalid ID format
+        "500":
+          description: Internal server error
+
+    delete:
+      summary: Remove a specific psychologist by ID
+      tags:
+        - Psychologists
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Psychologist ID
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Psychologist successfully deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "روانشناس با موفقیت حذف شد."
+        "404":
+          description: Psychologist not found
+        "409":
+          description: Invalid ID format
+        "500":
+          description: Internal server error
