@@ -1,12 +1,3 @@
-openapi: 3.0.0
-info:
-  title: Article Management API
-  description: API for managing blog articles
-  version: 1.0.0
-tags:
-  - name: Articles
-    description: Operations related to blog articles
-
 paths:
   /articles:
     get:
@@ -14,6 +5,8 @@ paths:
       description: Returns a list of all published articles
       tags:
         - Articles
+      security:
+        - accessToken: []
       responses:
         "200":
           description: List of published articles
@@ -22,7 +15,6 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Article"
         "404":
           description: No articles found
           content:
@@ -40,51 +32,12 @@ paths:
       tags:
         - Articles
       security:
-        - bearerAuth: []
+        - accessToken: []
       requestBody:
         required: true
         content:
           multipart/form-data:
-            schema:
-              type: object
-              properties:
-                title:
-                  type: string
-                  example: "نکات مهم روانشناسی کودک"
-                content:
-                  type: string
-                  example: "محتویات کامل مقاله..."
-                slug:
-                  type: string
-                  example: "psychology-child-tips"
-                tags:
-                  type: array
-                  items:
-                    type: string
-                  example: ["روانشناسی", "کودک"]
-                summery:
-                  type: string
-                  example: "خلاصه مقاله در 50 کلمه..."
-                category:
-                  type: string
-                  example: "روانشناسی"
-                readingTime:
-                  type: number
-                  example: 5
-                seoTitle:
-                  type: string
-                  example: "روانشناسی کودک | نکات مهم"
-                seoDescription:
-                  type: string
-                  example: "توضیحات سئو برای مقاله روانشناسی کودک"
-                publishNow:
-                  type: boolean
-                  example: true
-                images:
-                  type: array
-                  items:
-                    type: string
-                    format: binary
+
       responses:
         "201":
           description: Article created successfully
@@ -112,109 +65,6 @@ paths:
                     example: "این مقاله قبلا ثبت شده و تکراری می باشد."
         "500":
           description: Internal server error
-  components:
-    schemas:
-    Article:
-      type: object
-      properties:
-        title:
-          type: string
-          example: "Article Title"
-        content:
-          type: string
-          example: "Content of the article"
-        slug:
-          type: string
-          example: "article-title"
-        tags:
-          type: array
-          items:
-            type: string
-          example: ["tech", "web"]
-        summery:
-          type: string
-          example: "Short description"
-        category:
-          type: array
-          items:
-            type: string
-          example: ["category1", "category2"]
-        readingTime:
-          type: string
-          example: "5 min"
-        seoTitle:
-          type: string
-          example: "SEO Title"
-        seoDescription:
-          type: string
-          example: "SEO Description"
-        isPublished:
-          type: boolean
-          example: true
-        images:
-          type: array
-          items:
-            type: string
-          example: ["image1.jpg", "image2.jpg"]
-
-  securitySchemes:
-    bearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
-
-  tags:
-    - name: Articles
-      description: "Endpoints for managing articles"
-
-  requestBodies:
-    EditArticleRequest:
-      description: "Request body for editing an article"
-      required: true
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              title:
-                type: string
-                example: "Article Title"
-              content:
-                type: string
-                example: "Article content here..."
-              slug:
-                type: string
-                example: "article-title"
-              tags:
-                type: array
-                items:
-                  type: string
-                example: ["tech", "web"]
-              summery:
-                type: string
-                example: "Short description of the article"
-              category:
-                type: array
-                items:
-                  type: string
-                example: ["category1", "category2"]
-              readingTime:
-                type: string
-                example: "5 min"
-              seoTitle:
-                type: string
-                example: "SEO Title for Article"
-              seoDescription:
-                type: string
-                example: "SEO description for the article"
-              publishNow:
-                type: boolean
-                example: true
-              images:
-                type: array
-                items:
-                  type: string
-                  format: binary
 
   /articles/{id}:
     patch:
@@ -222,16 +72,16 @@ paths:
       tags:
         - Articles
       security:
-        - bearerAuth: []
+        - accessToken: []
       parameters:
         - name: id
           in: path
           required: true
-          description: "Article ID"
+          description: Article ID
           schema:
             type: string
       requestBody:
-        $ref: "#/components/requestBodies/EditArticleRequest"
+
       responses:
         "200":
           description: مقاله با موفقیت ویرایش شد.
@@ -251,12 +101,12 @@ paths:
       tags:
         - Articles
       security:
-        - bearerAuth: []
+        - accessToken: []
       parameters:
         - name: id
           in: path
           required: true
-          description: "Article ID"
+          description: Article ID
           schema:
             type: string
       responses:
@@ -274,12 +124,12 @@ paths:
       tags:
         - Articles
       security:
-        - bearerAuth: []
+        - accessToken: []
       parameters:
         - name: id
           in: path
           required: true
-          description: "Article ID"
+          description: Article ID
           schema:
             type: string
       responses:
@@ -292,56 +142,18 @@ paths:
         "500":
           description: خطای سرور داخلی.
 
-    # ... سایر تعاریق موجود
-
-    ArticleWithReviews:
-      allOf:
-        - $ref: "#/components/schemas/Article"
-        - type: object
-          properties:
-            views:
-              type: number
-              example: 42
-            reviews:
-              type: array
-              items:
-                $ref: "#/components/schemas/Review"
-
-    Review:
-      type: object
-      properties:
-        user:
-          $ref: "#/components/schemas/UserShortInfo"
-        rating:
-          type: number
-          minimum: 1
-          maximum: 5
-        comment:
-          type: string
-        isAccept:
-          type: boolean
-        createdAt:
-          type: string
-          format: date-time
-
-    UserShortInfo:
-      type: object
-      properties:
-        name:
-          type: string
-          example: "علی رضایی"
   /articles/{id}/like:
     post:
       summary: Toggle like status for an article
       tags:
         - Articles
       security:
-        - bearerAuth: []
+        - accessToken: []
       parameters:
         - name: id
           in: path
           required: true
-          description: "Article ID"
+          description: Article ID
           schema:
             type: string
       responses:
@@ -361,3 +173,37 @@ paths:
           description: آیدی وارد شده صحیح نمی باشد.
         "500":
           description: خطای سرور داخلی.
+
+  /articles/{slug}:
+    get:
+      summary: Get details of an article using the slug
+      tags:
+        - Articles
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          description: اسلاگ مقاله
+          schema:
+            type: string
+            example: "mental-health-benefits"
+      responses:
+        "200":
+          description: اطلاعات مقاله با موفقیت دریافت شد
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+
+        "404":
+          description: مقاله‌ای با این اسلاگ یافت نشد
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "مقاله ای با این اسلاگ پیدا نشد."
