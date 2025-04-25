@@ -29,7 +29,7 @@ const articleSchema = new mongoose.Schema(
     },
     summery: {
       type: String,
-      maxLength: 200,
+      maxLength: [200, "خلاصه نباید بیشتر از ۳۰۰ کاراکتر باشد."],
     },
     tags: [{ type: String, required: true }],
     category: [{ type: String, required: true }],
@@ -53,12 +53,12 @@ const articleSchema = new mongoose.Schema(
     seoTitle: {
       type: String,
       trim: true,
-      maxlength: 60,
+      maxlength: [60, "عنوان سئو حداکثر باید ۶۰ کاراکتر باشد."],
     },
     seoDescription: {
       type: String,
       trim: true,
-      maxlength: 160,
+      maxlength: [160, "توضیحات سئو حداکثر باید ۱۶۰ کاراکتر باشد."],
     },
     reviews: [
       {
