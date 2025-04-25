@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const envConfigs = require("../envConfigs");
-const loadBookingJobs = require("../utils/scheduler");
+const loadBookingJobs = require("../utils/schedulerJob");
 
 const connectToDatabase = async () => {
   try {
