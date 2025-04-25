@@ -1,0 +1,290 @@
+paths:
+  /reviews:
+    get:
+      summary: Get all reviews of the current user
+      tags:
+        - Reviews
+      security:
+        - accessToken: []
+      responses:
+        "200":
+          description: Successfully retrieved user reviews
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    avatar:
+                      type: string
+                    rating:
+                      type: number
+                      format: float
+                    reviews:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          user:
+                            type: object
+                            properties:
+                              name:
+                                type: string
+                          comment:
+                            type: string
+                          rating:
+                            type: number
+                            format: float
+                    psychologistID:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+        "400":
+          description: No reviews found for the user
+        "401":
+          description: Unauthorized (Token required)
+        "500":
+          description: Internal server error
+  /reviews/psychologists/{id}:
+    get:
+      summary: Get reviews for a specific psychologist
+      tags:
+        - Reviews
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: The ID of the psychologist to get reviews for
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Successfully retrieved psychologist's reviews
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  reviews:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        user:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                        comment:
+                          type: string
+                        stars:
+                          type: number
+                          format: float
+        "404":
+          description: No reviews found for this psychologist
+        "409":
+          description: Invalid psychologist ID
+        "500":
+          description: Internal server error
+
+    post:
+      summary: Submit a review for a specific psychologist
+      tags:
+        - Reviews
+      security:
+        - accessToken: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: The ID of the psychologist to create a review for
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                comment:
+                  type: string
+                  example: "Great session, very helpful!"
+                stars:
+                  type: number
+                  format: float
+                  example: 4.5
+      responses:
+        "201":
+          description: Review successfully created and waiting for approval
+        "404":
+          description: Psychologist not found
+        "409":
+          description: Invalid psychologist ID
+        "400":
+          description: Invalid request or missing required fields
+        "500":
+          description: Internal server error
+  /reviews/psychologists/{id}/accept:
+    patch:
+      summary: Accept a review for a psychologist
+      tags:
+        - Reviews
+      security:
+        - accessToken: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: The ID of the review to be accepted
+          schema:
+            type: string
+      responses:
+        "200":
+          description: کامنت با موفقیت تائید شد و رتبه‌بندی روانشناس به‌روزرسانی شد.
+        "404":
+          description: این نظر قبلا تائید شده است یا وجود ندارد.
+        "409":
+          description: آیدی وارد شده معتبر نمی‌باشد.
+        "500":
+          description: خطای سرور داخلی
+  /reviews/psychologists/{id}/remove:
+    delete:
+      summary: Remove a review for a psychologist
+      tags:
+        - Reviews
+      security:
+        - accessToken: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: The ID of the review to be removed
+          schema:
+            type: string
+      responses:
+        "200":
+          description: کامنت مورد نظر با موفقیت پاک شد.
+        "404":
+          description: کامنت پیدا نشد.
+        "409":
+          description: آیدی وارد شده معتبر نمی‌باشد.
+        "500":
+          description: خطای سرور داخلی
+  /reviews/articles/{id}:
+    post:
+      summary: Create a review for an article
+      tags:
+        - Reviews
+      security:
+        - accessToken: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: The ID of the article to review
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                comment:
+                  type: string
+                  description: The review comment
+                stars:
+                  type: integer
+                  description: Rating out of 5
+      responses:
+        "201":
+          description: نظر شما با موفقیت ثبت شد و پس از تائید مدیر بصورت عمومی نمایش داده خواهد شد.
+        "404":
+          description: مقاله یافت نشد.
+        "409":
+          description: آیدی وارد شده معتبر نمی‌باشد.
+        "500":
+          description: خطای سرور داخلی
+  /reviews/articles/{id}/accept:
+    patch:
+      summary: Accept a review for an article
+      tags:
+        - Reviews
+      security:
+        - accessToken: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: The ID of the review to accept
+          schema:
+            type: string
+      responses:
+        "200":
+          description: عملیات با موفقیت انجام شد.
+        "404":
+          description: این نظر قبلا تائید و یا حذف شده است.
+        "409":
+          description: آیدی وارد شده معتبر نمی‌باشد.
+        "500":
+          description: خطای سرور داخلی
+  /reviews/articles/{id}/remove:
+    delete:
+      summary: Remove a review for an article
+      tags:
+        - Reviews
+      security:
+        - accessToken: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The review ID to remove
+          schema:
+            type: string
+            example: 60c72b2f9c2f3e2d88f5b876
+      responses:
+        200:
+          description: Review successfully removed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: عملیات با موفقیت انجام شد.
+        400:
+          description: Invalid ID format
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: آیدی وارد شده معتبر نمی باشد.
+        404:
+          description: Review not found or already deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: این نظر قبلا حذف شده است.
+        500:
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: خطای داخلی سرور
