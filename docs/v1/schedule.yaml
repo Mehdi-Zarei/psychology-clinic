@@ -1,0 +1,288 @@
+paths:
+  /schedule:
+    post:
+      summary: Set available time for a psychologist
+      tags:
+        - Schedule
+      security:
+        - accessToken: []
+      requestBody:
+        description: Available times to be set for the psychologist
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                date:
+                  type: string
+                  format: date
+                  example: "2025-04-30"
+                availableTimes:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      time:
+                        type: string
+                        example: "10:00"
+      responses:
+        201:
+          description: Time successfully set and available for clients
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: زمان مورد نظر با موفقیت ثبت شد و در دسترس مراجعین قرار گرفت.
+        403:
+          description: User is restricted from setting consultation times
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: متاسفانه شما قادر به ثبت زمان مشاوره نخواهید بود.
+        409:
+          description: Time slot already exists for the given date
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: ساعت ملاقات قبلا برای این تاریخ ثبت شده است.
+        500:
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: خطای داخلی سرور
+
+    get:
+      summary: Get available times for psychologists
+      tags:
+        - Schedule
+      security:
+        - accessToken: []
+      responses:
+        200:
+          description: List of available times for psychologists
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    psychologistID:
+                      type: string
+                      example: 60c72b2f9c2f3e2d88f5b876
+                    date:
+                      type: string
+                      format: date
+                      example: "2025-04-30"
+                    availableTimes:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          time:
+                            type: string
+                            example: "10:00"
+        404:
+          description: No available appointments found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: قرار ملاقات یافت نشد.
+        500:
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: خطای داخلی سرور
+  /schedule/{id}:
+    put:
+      summary: Edit the appointment date
+      tags:
+        - Schedule
+      security:
+        - accessToken: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The appointment ID
+          schema:
+            type: string
+            example: "60c72b2f9c2f3e2d88f5b876"
+      requestBody:
+        description: New appointment date to be set
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                date:
+                  type: string
+                  format: date
+                  example: "2025-05-01"
+      responses:
+        200:
+          description: Appointment date updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: تاریخ ملاقات با موفقیت بروزرسانی شد.
+        409:
+          description: Invalid ID provided
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: آیدی ارسال شده صحیح نمی باشد!
+        404:
+          description: Appointment not found for the given date
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: در این تاریخ ، هیچ گونه زمان ملاقاتی یافت نشد!
+
+    patch:
+      summary: Edit the appointment time
+      tags:
+        - Schedule
+      security:
+        - accessToken: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The appointment ID
+          schema:
+            type: string
+            example: "60c72b2f9c2f3e2d88f5b876"
+      requestBody:
+        description: New appointment time to be updated
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                newTime:
+                  type: object
+                  properties:
+                    time:
+                      type: string
+                      example: "14:00"
+                    isBooked:
+                      type: boolean
+                      example: false
+      responses:
+        200:
+          description: Appointment time updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: زمان ملاقات با موفقیت آپدیت شد.
+        409:
+          description: Invalid ID provided
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: آیدی ارسال شده صحیح نمی باشد!
+        404:
+          description: Appointment time not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: زمان ملاقات یافت نشد!
+
+    delete:
+      summary: Remove an appointment date
+      tags:
+        - Schedule
+      security:
+        - accessToken: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The appointment ID to remove
+          schema:
+            type: string
+            example: "60c72b2f9c2f3e2d88f5b876"
+      responses:
+        200:
+          description: Appointment removed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: زمان ملاقات مورد نظر با موفقیت حذف شد.
+        409:
+          description: Invalid ID provided
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: آیدی ارسال شده صحیح نمی باشد!
+        404:
+          description: Appointment not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: هیچ گونه زمان ملاقاتی پیدا نشد!
