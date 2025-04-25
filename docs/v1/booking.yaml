@@ -5,7 +5,7 @@ paths:
       tags:
         - Bookings
       security:
-        - bearerAuth: []
+        - accessToken: []
       responses:
         "200":
           description: لیست زمان‌های ملاقات با موفقیت بازگردانده شد.
@@ -49,7 +49,7 @@ paths:
       tags:
         - Bookings
       security:
-        - bearerAuth: []
+        - accessToken: []
       parameters:
         - name: id
           in: path
@@ -80,7 +80,7 @@ paths:
       tags:
         - Bookings
       security:
-        - bearerAuth: []
+        - accessToken: []
       parameters:
         - name: id
           in: path
